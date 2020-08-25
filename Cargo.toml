@@ -41,7 +41,7 @@ transact-compat = ["transact"]
 
 [dependencies]
 hex = "0.3"
-secp256k1 = "0.7.1"
+secp256k1 = "0.17"
 rand = "0.4.2"
 rust-crypto = "0.2.36"
 openssl = { version = "0.10", optional = true }
