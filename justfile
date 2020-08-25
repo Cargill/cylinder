@@ -15,8 +15,6 @@
 
 crates := '\
     . \
-    examples/intkey_rust \
-    examples/xo_rust \
     '
 
 features := '\

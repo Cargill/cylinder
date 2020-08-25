@@ -18,9 +18,7 @@
 top_dir=$(cd $(dirname $(dirname $0)) && pwd)
 
 dirs="
-    $top_dir/
-    $top_dir/examples/intkey_rust
-    $top_dir/examples/xo_rust
+    $top_dir
 "
 
 exitcode=0

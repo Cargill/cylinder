@@ -15,11 +15,4 @@
  * ------------------------------------------------------------------------------
  */
 
-#[macro_use]
-extern crate log;
-
-pub mod consensus;
-pub mod messages;
-pub mod messaging;
-pub mod processor;
 pub mod signing;
