@@ -28,8 +28,6 @@ use openssl::{
 use rand::os::OsRng;
 use rand::Rng;
 
-use crate::signing::bytes_to_hex_str;
-use crate::signing::hex_str_to_bytes;
 use crate::signing::Context;
 use crate::signing::Error;
 use crate::signing::PrivateKey;
@@ -54,7 +52,9 @@ pub struct Secp256k1PrivateKey {
 
 impl Secp256k1PrivateKey {
     pub fn from_hex(s: &str) -> Result<Self, Error> {
-        hex_str_to_bytes(s).map(|key_bytes| Secp256k1PrivateKey { private: key_bytes })
+        Ok(Secp256k1PrivateKey {
+            private: hex::decode(s)?,
+        })
     }
 
     #[cfg(feature = "pem")]
@@ -107,7 +107,7 @@ impl PrivateKey for Secp256k1PrivateKey {
     }
 
     fn as_hex(&self) -> String {
-        bytes_to_hex_str(&self.private)
+        hex::encode(&self.private)
     }
 
     fn as_slice(&self) -> &[u8] {
@@ -121,7 +121,9 @@ pub struct Secp256k1PublicKey {
 
 impl Secp256k1PublicKey {
     pub fn from_hex(s: &str) -> Result<Self, Error> {
-        hex_str_to_bytes(s).map(|key_bytes| Secp256k1PublicKey { public: key_bytes })
+        Ok(Secp256k1PublicKey {
+            public: hex::decode(s)?,
+        })
     }
 }
 
@@ -131,7 +133,7 @@ impl PublicKey for Secp256k1PublicKey {
     }
 
     fn as_hex(&self) -> String {
-        bytes_to_hex_str(&self.public)
+        hex::encode(&self.public)
     }
 
     fn as_slice(&self) -> &[u8] {
@@ -188,7 +190,7 @@ impl Context for Secp256k1Context {
 
         let result = self.context.verify(
             &secp256k1::Message::from_slice(hash)?,
-            &secp256k1::Signature::from_compact(&self.context, &hex_str_to_bytes(&signature)?)?,
+            &secp256k1::Signature::from_compact(&self.context, &hex::decode(&signature)?)?,
             &secp256k1::key::PublicKey::from_slice(&self.context, key.as_slice())?,
         );
         match result {
@@ -201,7 +203,7 @@ impl Context for Secp256k1Context {
     fn get_public_key(&self, private_key: &dyn PrivateKey) -> Result<Box<dyn PublicKey>, Error> {
         let sk = secp256k1::key::SecretKey::from_slice(&self.context, private_key.as_slice())?;
         let result = Secp256k1PublicKey::from_hex(
-            bytes_to_hex_str(
+            hex::encode(
                 &secp256k1::key::PublicKey::from_secret_key(&self.context, &sk)?
                     .serialize_vec(&self.context, true),
             )

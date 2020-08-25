@@ -21,6 +21,8 @@ pub mod transact;
 
 use std::error::Error as StdError;
 
+use hex::FromHexError;
+
 #[derive(Debug)]
 pub enum Error {
     /// Returned when trying to create an algorithm which does not exist.
@@ -51,6 +53,12 @@ impl std::fmt::Display for Error {
             Error::SigningError(ref err) => write!(f, "SigningError: {}", err),
             Error::KeyGenError(ref s) => write!(f, "KeyGenError: {}", s),
         }
+    }
+}
+
+impl From<FromHexError> for Error {
+    fn from(err: FromHexError) -> Self {
+        Self::ParseError(err.to_string())
     }
 }
 
@@ -231,35 +239,6 @@ impl<'a> Signer<'a> {
             ContextAndKey::ByBox(context, key) => context.get_public_key(key.as_ref()),
         }
     }
-}
-
-fn hex_str_to_bytes(s: &str) -> Result<Vec<u8>, Error> {
-    for (i, ch) in s.chars().enumerate() {
-        if !ch.is_digit(16) {
-            return Err(Error::ParseError(format!(
-                "invalid character position {}",
-                i
-            )));
-        }
-    }
-
-    let input: Vec<_> = s.chars().collect();
-
-    let decoded: Vec<u8> = input
-        .chunks(2)
-        .map(|chunk| {
-            ((chunk[0].to_digit(16).unwrap() << 4) | (chunk[1].to_digit(16).unwrap())) as u8
-        })
-        .collect();
-
-    Ok(decoded)
-}
-
-fn bytes_to_hex_str(b: &[u8]) -> String {
-    b.iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<Vec<_>>()
-        .join("")
 }
 
 #[cfg(test)]

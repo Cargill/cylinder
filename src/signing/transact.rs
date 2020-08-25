@@ -25,7 +25,7 @@ use std::convert::TryFrom;
 
 use transact::signing::Error as TransactSigningError;
 
-use super::{hex_str_to_bytes, Error, PublicKey, Signer};
+use super::{Error, PublicKey, Signer};
 
 /// Provides an implementation of the [`transact`] library's [`Signer`] trait, backed by the
 /// Sawtooth SDK's own [`Signer`](../struct.signer.html) struct.
@@ -53,7 +53,7 @@ impl transact::signing::Signer for TransactSigner {
         Ok(self
             .inner_signer
             .sign(message)
-            .and_then(|hex| hex_str_to_bytes(&hex))?)
+            .and_then(|hex| hex::decode(&hex))?)
     }
 
     fn public_key(&self) -> &[u8] {
@@ -85,9 +85,7 @@ impl From<Error> for TransactSigningError {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{
-        bytes_to_hex_str, create_context, secp256k1::Secp256k1PrivateKey, PrivateKey,
-    };
+    use super::super::{create_context, secp256k1::Secp256k1PrivateKey, PrivateKey};
     use super::*;
 
     use std::convert::TryInto;
@@ -143,7 +141,7 @@ mod tests {
         let signature = signer
             .sign(&String::from(MSG).into_bytes())
             .expect("failed to sign msg");
-        assert_eq!(&bytes_to_hex_str(&signature), MSG_KEY_SIG);
-        assert_eq!(&bytes_to_hex_str(signer.public_key()), KEY_PUB_HEX)
+        assert_eq!(&hex::encode(&signature), MSG_KEY_SIG);
+        assert_eq!(&hex::encode(signer.public_key()), KEY_PUB_HEX)
     }
 }
