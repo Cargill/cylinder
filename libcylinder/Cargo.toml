@@ -30,7 +30,6 @@ default = ["pem"]
 
 stable = [
     "default",
-    "transact-compat",
 ]
 
 experimental = [
@@ -42,7 +41,6 @@ experimental = [
 hash = ["openssl"]
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
-transact-compat = ["transact"]
 
 [dependencies]
 hex = "0.4"
@@ -50,7 +48,6 @@ secp256k1 = "0.17"
 rand = "0.7"
 rust-crypto = "0.2"
 openssl = { version = "0.10", optional = true }
-transact = { version = "0.2", optional = true }
 
 [package.metadata.docs.rs]
 features = [
