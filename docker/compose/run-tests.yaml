@@ -1,4 +1,4 @@
-# Copyright 2017 Intel Corporation
+# Copyright 2020 Cargill Incorporated
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ------------------------------------------------------------------------------
 
-version: "2.1"
+version: "3.7"
 
 services:
 
-  unit-rust-sdk:
+  test-cylinder:
     build:
-      context: ..
-      dockerfile: ./tests/rust-sdk-tests.dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: rust-sdk-tests:$ISOLATION_ID
+      context: ../..
+      dockerfile: ./docker/test-cylinder.dockerfile
+    image: cylinder-tests:$ISOLATION_ID
     volumes:
-      - $SAWTOOTH_SDK_RUST:/project/sawtooth-sdk-rust
-    working_dir: /project/sawtooth-sdk-rust
-    # Test that the SDK compiles with default features both enabled and disabled
-    command: bash -c "cargo test && cargo test --no-default-features"
+      - ../../:/project/cylinder
+    working_dir: /project/cylinder
+    command: just test

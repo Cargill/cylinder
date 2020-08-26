@@ -25,7 +25,7 @@ use openssl::{
     pkey::Private as EcPrivate,
     symm::Cipher,
 };
-use rand::{RngCore, rngs::OsRng};
+use rand::{rngs::OsRng, RngCore};
 
 use crate::signing::bytes_to_hex_str;
 use crate::signing::hex_str_to_bytes;
@@ -188,7 +188,7 @@ impl Context for Secp256k1Context {
         let result = self.context.verify(
             &secp256k1::Message::from_slice(hash)?,
             &secp256k1::Signature::from_compact(&hex_str_to_bytes(&signature)?)?,
-            &secp256k1::key::PublicKey::from_slice( key.as_slice())?,
+            &secp256k1::key::PublicKey::from_slice(key.as_slice())?,
         );
         match result {
             Ok(()) => Ok(true),
@@ -201,8 +201,7 @@ impl Context for Secp256k1Context {
         let sk = secp256k1::key::SecretKey::from_slice(private_key.as_slice())?;
         let result = Secp256k1PublicKey::from_hex(
             bytes_to_hex_str(
-                &secp256k1::key::PublicKey::from_secret_key(&self.context, &sk)
-                    .serialize(),
+                &secp256k1::key::PublicKey::from_secret_key(&self.context, &sk).serialize(),
             )
             .as_str(),
         );

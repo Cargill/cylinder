@@ -1,4 +1,4 @@
-# Copyright 2018 Cargill Incorporated
+# Copyright 2020 Cargill Incorporated
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: "3.7"
+FROM rust:latest
 
-services:
+RUN apt-get update \
+ && apt-get install -y \
+    curl
 
-  lint-cylinder:
-    build:
-      context: ../..
-      dockerfile: ./docker/test-cylinder.dockerfile
-    image: cylinder-tests
-    volumes:
-      - ../../:/project/cylinder
-    working_dir: /project/cylinder
-    command: just lint
+RUN curl -OLsS https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-x86_64.zip \
+ && unzip protoc-3.5.1-linux-x86_64.zip -d protoc3 \
+ && rm protoc-3.5.1-linux-x86_64.zip
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | \
+    bash -s -- --to /usr/bin
+
+ENV PATH=$PATH:/protoc3/bin \
+    CARGO_INCREMENTAL=0
+
+RUN rustup component add rustfmt clippy
+
+WORKDIR /project/cylinder
+
