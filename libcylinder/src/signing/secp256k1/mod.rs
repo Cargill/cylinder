@@ -115,7 +115,7 @@ impl Context for Secp256k1Context {
 mod secp256k1_test {
     use super::*;
 
-    use crate::signing::{create_context, CryptoFactory, Signer};
+    use crate::signing::{create_context, ContextSigner, CryptoFactory};
 
     static KEY1_PRIV_HEX: &'static str =
         "2f1e7b7a130d7ba9da0068b3bb0ba1d79e7e77110302c9f746c3c2a63fe40088";
@@ -170,7 +170,7 @@ mod secp256k1_test {
         assert_eq!(signature, MSG1_KEY1_SIG);
     }
 
-    fn create_signer() -> Signer<'static> {
+    fn create_signer() -> ContextSigner<'static> {
         let context = create_context("secp256k1").unwrap();
         assert_eq!(context.get_algorithm_name(), "secp256k1");
 
@@ -181,7 +181,7 @@ mod secp256k1_test {
             PrivateKey::new_from_hex(KEY1_PRIV_HEX).expect("Failed to parse key from hex");
         assert_eq!(priv_key.as_hex(), KEY1_PRIV_HEX);
 
-        Signer::new_boxed(context, priv_key)
+        ContextSigner::new_boxed(context, priv_key)
     }
 
     #[test]
