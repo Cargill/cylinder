@@ -36,8 +36,10 @@ experimental = [
   # The experimental feature extends stable:
   "stable",
   # The following features are experimental:
+  "hash",
 ]
 
+hash = ["sha2"]
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
 
@@ -46,6 +48,7 @@ secp256k1 = "0.17"
 rand = "0.7"
 rust-crypto = "0.2"
 openssl = { version = "0.10", optional = true }
+sha2 = { version = "0.9", optional = true }
 
 [package.metadata.docs.rs]
 features = [
