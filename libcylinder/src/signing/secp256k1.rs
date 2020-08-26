@@ -166,7 +166,7 @@ impl Context for Secp256k1Context {
 mod secp256k1_test {
     use super::*;
 
-    use crate::signing::{create_context, CryptoFactory, Signer};
+    use crate::signing::{create_context, ContextSigner, CryptoFactory};
 
     static KEY1_PRIV: &'static [u8] = &[
         47, 30, 123, 122, 19, 13, 123, 169, 218, 0, 104, 179, 187, 11, 161, 215, 158, 126, 119, 17,
@@ -254,7 +254,7 @@ mod secp256k1_test {
         assert_eq!(signature, MSG1_KEY1_SIG);
     }
 
-    fn create_signer() -> Signer<'static> {
+    fn create_signer() -> ContextSigner<'static> {
         let context = create_context("secp256k1").unwrap();
         assert_eq!(context.get_algorithm_name(), "secp256k1");
 
@@ -264,7 +264,7 @@ mod secp256k1_test {
         let priv_key = PrivateKey::new(KEY1_PRIV.into());
         assert_eq!(priv_key.as_slice(), KEY1_PRIV);
 
-        Signer::new_boxed(context, priv_key)
+        ContextSigner::new_boxed(context, priv_key)
     }
 
     #[test]

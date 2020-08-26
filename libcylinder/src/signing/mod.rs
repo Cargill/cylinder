@@ -19,7 +19,10 @@ pub mod secp256k1;
 
 use std::error::Error as StdError;
 
-use super::{PrivateKey, PublicKey};
+use super::{
+    bytes_to_hex_str, hex_str_to_bytes, PrivateKey, PublicKey, SignatureVerificationError,
+    SignatureVerifier, Signer, SigningError,
+};
 
 #[derive(Debug)]
 pub enum Error {
@@ -54,9 +57,20 @@ impl std::fmt::Display for Error {
     }
 }
 
+impl From<Error> for SigningError {
+    fn from(err: Error) -> Self {
+        Self::Internal(err.to_string())
+    }
+}
+
+impl From<Error> for SignatureVerificationError {
+    fn from(err: Error) -> Self {
+        Self::Internal(err.to_string())
+    }
+}
 
 /// A context for a cryptographic signing algorithm.
-pub trait Context {
+pub trait Context: Send + Sync {
     /// Returns the algorithm name.
     fn get_algorithm_name(&self) -> &str;
     /// Sign a message
@@ -102,6 +116,18 @@ pub trait Context {
     fn new_random_private_key(&self) -> Result<PrivateKey, Error>;
 }
 
+impl<T: Context> SignatureVerifier for T {
+    fn verify(
+        &self,
+        message: &[u8],
+        signature: &[u8],
+        public_key: &PublicKey,
+    ) -> Result<bool, SignatureVerificationError> {
+        self.verify(&bytes_to_hex_str(signature), message, public_key)
+            .map_err(SignatureVerificationError::from)
+    }
+}
+
 pub fn create_context(algorithm_name: &str) -> Result<Box<dyn Context>, Error> {
     match algorithm_name {
         "secp256k1" => Ok(Box::new(secp256k1::Secp256k1Context::new())),
@@ -142,9 +168,9 @@ impl<'a> CryptoFactory<'a> {
     ///
     /// # Returns
     ///
-    /// * `signer` - a signer instance
-    pub fn new_signer(&self, key: &'a PrivateKey) -> Signer {
-        Signer::new(self.context, key)
+    /// * `signer` - a `ContextSigner` instance
+    pub fn new_signer(&self, key: &'a PrivateKey) -> ContextSigner {
+        ContextSigner::new(self.context, key)
     }
 }
 
@@ -154,31 +180,31 @@ enum ContextAndKey<'a> {
 }
 
 /// A convenient wrapper of Context and PrivateKey
-pub struct Signer<'a> {
+pub struct ContextSigner<'a> {
     context_and_key: ContextAndKey<'a>,
 }
 
-impl<'a> Signer<'a> {
-    /// Constructs a new Signer
+impl<'a> ContextSigner<'a> {
+    /// Constructs a new ContextSigner
     ///
     /// # Arguments
     ///
     /// * `context` - a cryptographic context
     /// * `private_key` - private key
     pub fn new(context: &'a dyn Context, key: &'a PrivateKey) -> Self {
-        Signer {
+        ContextSigner {
             context_and_key: ContextAndKey::ByRef(context, key),
         }
     }
 
-    /// Constructs a new Signer with boxed arguments
+    /// Constructs a new ContextSigner with boxed arguments
     ///
     /// # Arguments
     ///
     /// * `context` - a cryptographic context
     /// * `key` - private key
     pub fn new_boxed(context: Box<dyn Context>, key: PrivateKey) -> Self {
-        Signer {
+        ContextSigner {
             context_and_key: ContextAndKey::ByBox(context, key),
         }
     }
@@ -199,7 +225,7 @@ impl<'a> Signer<'a> {
         }
     }
 
-    /// Return the public key for this Signer instance.
+    /// Return the public key for this ContextSigner instance.
     ///
     /// # Returns
     ///
@@ -209,6 +235,18 @@ impl<'a> Signer<'a> {
             ContextAndKey::ByRef(context, key) => context.get_public_key(*key),
             ContextAndKey::ByBox(context, key) => context.get_public_key(&key),
         }
+    }
+}
+
+impl<'a> Signer for ContextSigner<'a> {
+    fn sign(&self, message: &[u8]) -> Result<Vec<u8>, SigningError> {
+        self.sign(message)
+            .map_err(SigningError::from)
+            .and_then(|hex| hex_str_to_bytes(&hex).map_err(SigningError::from))
+    }
+
+    fn public_key(&self) -> Result<PublicKey, SigningError> {
+        self.get_public_key().map_err(SigningError::from)
     }
 }
 
