@@ -33,7 +33,11 @@ stable = [
     "transact-compat",
 ]
 
-experimental = []
+experimental = [
+  # The experimental feature extends stable:
+  "stable",
+  # The following features are experimental:
+]
 
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
