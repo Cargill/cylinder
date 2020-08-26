@@ -39,6 +39,7 @@ experimental = [
   # The following features are experimental:
 ]
 
+hash = ["openssl"]
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
 transact-compat = ["transact"]

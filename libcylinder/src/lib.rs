@@ -17,6 +17,9 @@
  */
 
 mod error;
+#[cfg(feature = "hash")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hash")))]
+pub mod hash;
 pub mod signing;
 
 use error::HexError;
