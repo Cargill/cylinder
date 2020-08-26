@@ -14,7 +14,7 @@
 
 
 crates := '\
-    . \
+    libcylinder \
     '
 
 features := '\
@@ -54,12 +54,12 @@ clean:
 lint:
     #!/usr/bin/env sh
     set -e
-    echo "\033[1mcargo fmt -- --check\033[0m"
-    cargo fmt -- --check
     for feature in $(echo {{features}})
     do
         for crate in $(echo {{crates}})
         do
+            echo "\033[1mcargo fmt -- --check\033[0m"
+            cargo fmt --manifest-path=$crate/Cargo.toml -- --check
             cmd="cargo clippy --manifest-path=$crate/Cargo.toml $feature -- -D warnings"
             echo "\033[1m$cmd\033[0m"
             $cmd
