@@ -19,6 +19,8 @@ pub mod secp256k1;
 
 use std::error::Error as StdError;
 
+use super::{PrivateKey, PublicKey};
+
 #[derive(Debug)]
 pub enum Error {
     /// Returned when trying to create an algorithm which does not exist.
@@ -52,28 +54,6 @@ impl std::fmt::Display for Error {
     }
 }
 
-/// A private key instance.
-/// The underlying content is dependent on implementation.
-pub trait PrivateKey {
-    /// Returns the algorithm name used for this private key.
-    fn get_algorithm_name(&self) -> &str;
-    /// Return the private key encoded as a hex string.
-    fn as_hex(&self) -> String;
-    /// Return the private key bytes.
-    fn as_slice(&self) -> &[u8];
-}
-
-/// A public key instance.
-/// The underlying content is dependent on implementation.
-pub trait PublicKey {
-    /// Returns the algorithm name used for this public key.
-    fn get_algorithm_name(&self) -> &str;
-    /// Return the public key encoded as a hex string.
-    fn as_hex(&self) -> String;
-    /// Return the public key bytes.
-    fn as_slice(&self) -> &[u8];
-}
-
 /// A context for a cryptographic signing algorithm.
 pub trait Context {
     /// Returns the algorithm name.
@@ -89,7 +69,7 @@ pub trait Context {
     /// # Returns
     ///
     /// * `signature` - The signature in a hex-encoded string
-    fn sign(&self, message: &[u8], key: &dyn PrivateKey) -> Result<String, Error>;
+    fn sign(&self, message: &[u8], key: &PrivateKey) -> Result<String, Error>;
 
     /// Verifies that the signature of a message was produced with the
     /// associated public key.
@@ -103,7 +83,7 @@ pub trait Context {
     ///
     /// * `boolean` - True if the public key is associated with the signature for that method,
     ///            False otherwise
-    fn verify(&self, signature: &str, message: &[u8], key: &dyn PublicKey) -> Result<bool, Error>;
+    fn verify(&self, signature: &str, message: &[u8], key: &PublicKey) -> Result<bool, Error>;
 
     /// Produce the public key for the given private key.
     /// # Arguments
@@ -112,13 +92,13 @@ pub trait Context {
     ///
     /// # Returns
     /// * `public_key` - the public key for the given private key
-    fn get_public_key(&self, private_key: &dyn PrivateKey) -> Result<Box<dyn PublicKey>, Error>;
+    fn get_public_key(&self, private_key: &PrivateKey) -> Result<PublicKey, Error>;
 
     ///Generates a new random PrivateKey using this context.
     /// # Returns
     ///
     /// * `private_key` - a random private key
-    fn new_random_private_key(&self) -> Result<Box<dyn PrivateKey>, Error>;
+    fn new_random_private_key(&self) -> Result<PrivateKey, Error>;
 }
 
 pub fn create_context(algorithm_name: &str) -> Result<Box<dyn Context>, Error> {
@@ -162,14 +142,14 @@ impl<'a> CryptoFactory<'a> {
     /// # Returns
     ///
     /// * `signer` - a signer instance
-    pub fn new_signer(&self, key: &'a dyn PrivateKey) -> Signer {
+    pub fn new_signer(&self, key: &'a PrivateKey) -> Signer {
         Signer::new(self.context, key)
     }
 }
 
 enum ContextAndKey<'a> {
-    ByRef(&'a dyn Context, &'a dyn PrivateKey),
-    ByBox(Box<dyn Context>, Box<dyn PrivateKey>),
+    ByRef(&'a dyn Context, &'a PrivateKey),
+    ByBox(Box<dyn Context>, PrivateKey),
 }
 
 /// A convenient wrapper of Context and PrivateKey
@@ -184,7 +164,7 @@ impl<'a> Signer<'a> {
     ///
     /// * `context` - a cryptographic context
     /// * `private_key` - private key
-    pub fn new(context: &'a dyn Context, key: &'a dyn PrivateKey) -> Self {
+    pub fn new(context: &'a dyn Context, key: &'a PrivateKey) -> Self {
         Signer {
             context_and_key: ContextAndKey::ByRef(context, key),
         }
@@ -196,7 +176,7 @@ impl<'a> Signer<'a> {
     ///
     /// * `context` - a cryptographic context
     /// * `key` - private key
-    pub fn new_boxed(context: Box<dyn Context>, key: Box<dyn PrivateKey>) -> Self {
+    pub fn new_boxed(context: Box<dyn Context>, key: PrivateKey) -> Self {
         Signer {
             context_and_key: ContextAndKey::ByBox(context, key),
         }
@@ -214,7 +194,7 @@ impl<'a> Signer<'a> {
     pub fn sign(&self, message: &[u8]) -> Result<String, Error> {
         match &self.context_and_key {
             ContextAndKey::ByRef(context, key) => context.sign(message, *key),
-            ContextAndKey::ByBox(context, key) => context.sign(message, key.as_ref()),
+            ContextAndKey::ByBox(context, key) => context.sign(message, &key),
         }
     }
 
@@ -223,10 +203,10 @@ impl<'a> Signer<'a> {
     /// # Returns
     ///
     /// * `public_key` - the public key instance
-    pub fn get_public_key(&self) -> Result<Box<dyn PublicKey>, Error> {
+    pub fn get_public_key(&self) -> Result<PublicKey, Error> {
         match &self.context_and_key {
             ContextAndKey::ByRef(context, key) => context.get_public_key(*key),
-            ContextAndKey::ByBox(context, key) => context.get_public_key(key.as_ref()),
+            ContextAndKey::ByBox(context, key) => context.get_public_key(&key),
         }
     }
 }
