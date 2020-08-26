@@ -1,4 +1,4 @@
-# Copyright 2018 Cargill Incorporated
+# Copyright 2020 Cargill Incorporated
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@ version: "3.7"
 
 services:
 
-  lint-cylinder:
+  test-cylinder:
     build:
       context: ../..
       dockerfile: ./docker/test-cylinder.dockerfile
-    image: cylinder-tests
+    image: cylinder-tests:$ISOLATION_ID
     volumes:
       - ../../:/project/cylinder
     working_dir: /project/cylinder
-    command: just lint
+    command: just test
