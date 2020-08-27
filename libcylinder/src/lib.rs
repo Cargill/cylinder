@@ -22,7 +22,7 @@ mod key;
 pub mod signing;
 
 pub use error::{SignatureVerificationError, SigningError};
-pub use key::{PrivateKey, PublicKey};
+pub use key::{KeyParseError, PrivateKey, PublicKey};
 
 /// A signer for arbitrary messages
 pub trait Signer: Send {
