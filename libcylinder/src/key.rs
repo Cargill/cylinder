@@ -17,7 +17,9 @@
 
 //! Cryptographic keys
 
-use crate::hex::bytes_to_hex_str;
+use std::error::Error;
+
+use crate::hex::{bytes_to_hex_str, hex_str_to_bytes, HexError};
 
 /// A public key
 pub struct PublicKey {
@@ -28,6 +30,11 @@ impl PublicKey {
     /// Creates a new public key
     pub fn new(bytes: Vec<u8>) -> Self {
         Self { bytes }
+    }
+
+    /// Creates a new public key from a hex string
+    pub fn new_from_hex(hex: &str) -> Result<Self, KeyParseError> {
+        Ok(Self::new(hex_str_to_bytes(hex)?))
     }
 
     /// Returns the public key as a hex string
@@ -63,6 +70,11 @@ impl PrivateKey {
         Self { bytes }
     }
 
+    /// Creates a new private key from a hex string
+    pub fn new_from_hex(hex: &str) -> Result<Self, KeyParseError> {
+        Ok(Self::new(hex_str_to_bytes(hex)?))
+    }
+
     /// Returns the private key as a hex string
     pub fn as_hex(&self) -> String {
         bytes_to_hex_str(&self.bytes)
@@ -82,6 +94,24 @@ impl PrivateKey {
 impl std::fmt::Display for PrivateKey {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.write_str(&self.as_hex())
+    }
+}
+
+/// An error that can occur when parsing a key
+#[derive(Debug)]
+pub struct KeyParseError(pub String);
+
+impl Error for KeyParseError {}
+
+impl std::fmt::Display for KeyParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl From<HexError> for KeyParseError {
+    fn from(err: HexError) -> Self {
+        Self(err.to_string())
     }
 }
 
