@@ -16,4 +16,7 @@
  */
 
 mod hex;
+mod key;
 pub mod signing;
+
+pub use key::{PrivateKey, PublicKey};
