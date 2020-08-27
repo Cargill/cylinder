@@ -42,7 +42,6 @@ experimental = [
 pem = ["openssl"]
 
 [dependencies]
-hex = "0.4"
 secp256k1 = "0.17"
 rand = "0.7"
 rust-crypto = "0.2"
