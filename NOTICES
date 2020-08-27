@@ -5,7 +5,6 @@ These components are released under separate copyright notices and license terms
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-=> rust hex
 => rust rand
 => rust-crypto
 => rust transact
