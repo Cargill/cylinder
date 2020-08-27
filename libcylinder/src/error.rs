@@ -19,6 +19,44 @@
 
 use std::error::Error;
 
+/// An error that can occur with signing
+#[derive(Debug)]
+pub enum SigningError {
+    Internal(String),
+}
+
+impl Error for SigningError {}
+
+impl std::fmt::Display for SigningError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Internal(msg) => f.write_str(msg),
+        }
+    }
+}
+
+impl From<HexError> for SigningError {
+    fn from(err: HexError) -> Self {
+        Self::Internal(err.to_string())
+    }
+}
+
+/// An error that can occur with signature verification
+#[derive(Debug)]
+pub enum SignatureVerificationError {
+    Internal(String),
+}
+
+impl Error for SignatureVerificationError {}
+
+impl std::fmt::Display for SignatureVerificationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Internal(msg) => f.write_str(msg),
+        }
+    }
+}
+
 /// An error that can occur when converting from hex
 #[derive(Debug)]
 pub struct HexError(pub String);
