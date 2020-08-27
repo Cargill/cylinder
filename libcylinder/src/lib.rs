@@ -1,5 +1,6 @@
 /*
  * Copyright 2017 Intel Corporation
+ * Copyright 2018-2020 Cargill Incorporated
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,5 +16,30 @@
  * ------------------------------------------------------------------------------
  */
 
+mod error;
 mod hex;
+mod key;
 pub mod signing;
+
+pub use error::{SignatureVerificationError, SigningError};
+pub use key::{PrivateKey, PublicKey};
+
+/// A signer for arbitrary messages
+pub trait Signer: Send {
+    /// Signs the given message
+    fn sign(&self, message: &[u8]) -> Result<Vec<u8>, SigningError>;
+
+    /// Returns the signer's public key
+    fn public_key(&self) -> Result<PublicKey, SigningError>;
+}
+
+/// Verifies message signatures
+pub trait SignatureVerifier: Send {
+    /// Verifies that the provided signature is valid for the given message and public key
+    fn verify(
+        &self,
+        message: &[u8],
+        signature: &[u8],
+        public_key: &PublicKey,
+    ) -> Result<bool, SignatureVerificationError>;
+}
