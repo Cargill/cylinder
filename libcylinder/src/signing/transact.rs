@@ -25,7 +25,9 @@ use std::convert::TryFrom;
 
 use transact::signing::Error as TransactSigningError;
 
-use super::{hex_str_to_bytes, Error, PublicKey, Signer};
+use crate::hex_str_to_bytes;
+
+use super::{Error, PublicKey, Signer};
 
 /// Provides an implementation of the [`transact`] library's [`Signer`] trait, backed by the
 /// Sawtooth SDK's own [`Signer`](../struct.signer.html) struct.
@@ -50,10 +52,9 @@ impl TransactSigner {
 
 impl transact::signing::Signer for TransactSigner {
     fn sign(&self, message: &[u8]) -> Result<Vec<u8>, TransactSigningError> {
-        Ok(self
-            .inner_signer
-            .sign(message)
-            .and_then(|hex| hex_str_to_bytes(&hex))?)
+        Ok(self.inner_signer.sign(message).and_then(|hex| {
+            hex_str_to_bytes(&hex).map_err(|err| Error::SigningError(Box::new(err)))
+        })?)
     }
 
     fn public_key(&self) -> &[u8] {
@@ -85,12 +86,12 @@ impl From<Error> for TransactSigningError {
 
 #[cfg(test)]
 mod tests {
-    use super::super::{
-        bytes_to_hex_str, create_context, secp256k1::Secp256k1PrivateKey, PrivateKey,
-    };
+    use super::super::{create_context, secp256k1::Secp256k1PrivateKey, PrivateKey};
     use super::*;
 
     use std::convert::TryInto;
+
+    use crate::bytes_to_hex_str;
 
     static KEY_PRIV_HEX: &'static str =
         "2f1e7b7a130d7ba9da0068b3bb0ba1d79e7e77110302c9f746c3c2a63fe40088";
