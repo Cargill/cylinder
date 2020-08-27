@@ -19,8 +19,8 @@
 
 /build/
 
-/target
-/Cargo.lock
+libcylinder/target
+libcylinder/Cargo.lock
 
 *.batch
 .coverage
