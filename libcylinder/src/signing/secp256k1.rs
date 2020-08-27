@@ -27,8 +27,7 @@ use openssl::{
 };
 use rand::{rngs::OsRng, RngCore};
 
-use crate::signing::bytes_to_hex_str;
-use crate::signing::hex_str_to_bytes;
+use crate::hex::{bytes_to_hex_str, hex_str_to_bytes};
 use crate::signing::Context;
 use crate::signing::Error;
 use crate::signing::PrivateKey;
@@ -53,7 +52,9 @@ pub struct Secp256k1PrivateKey {
 
 impl Secp256k1PrivateKey {
     pub fn from_hex(s: &str) -> Result<Self, Error> {
-        hex_str_to_bytes(s).map(|key_bytes| Secp256k1PrivateKey { private: key_bytes })
+        hex_str_to_bytes(s)
+            .map(|key_bytes| Secp256k1PrivateKey { private: key_bytes })
+            .map_err(|err| Error::ParseError(err.to_string()))
     }
 
     #[cfg(feature = "pem")]
@@ -120,7 +121,9 @@ pub struct Secp256k1PublicKey {
 
 impl Secp256k1PublicKey {
     pub fn from_hex(s: &str) -> Result<Self, Error> {
-        hex_str_to_bytes(s).map(|key_bytes| Secp256k1PublicKey { public: key_bytes })
+        hex_str_to_bytes(s)
+            .map(|key_bytes| Secp256k1PublicKey { public: key_bytes })
+            .map_err(|err| Error::SigningError(Box::new(err)))
     }
 }
 
@@ -187,7 +190,9 @@ impl Context for Secp256k1Context {
 
         let result = self.context.verify(
             &secp256k1::Message::from_slice(hash)?,
-            &secp256k1::Signature::from_compact(&hex_str_to_bytes(&signature)?)?,
+            &secp256k1::Signature::from_compact(
+                &hex_str_to_bytes(&signature).map_err(|err| Error::ParseError(err.to_string()))?,
+            )?,
             &secp256k1::key::PublicKey::from_slice(key.as_slice())?,
         );
         match result {
