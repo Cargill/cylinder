@@ -29,7 +29,7 @@ pub use signature::Signature;
 /// A signer for arbitrary messages
 pub trait Signer: Send {
     /// Signs the given message
-    fn sign(&self, message: &[u8]) -> Result<Vec<u8>, SigningError>;
+    fn sign(&self, message: &[u8]) -> Result<Signature, SigningError>;
 
     /// Returns the signer's public key
     fn public_key(&self) -> Result<PublicKey, SigningError>;
@@ -41,7 +41,7 @@ pub trait SignatureVerifier: Send {
     fn verify(
         &self,
         message: &[u8],
-        signature: &[u8],
+        signature: &Signature,
         public_key: &PublicKey,
     ) -> Result<bool, SignatureVerificationError>;
 }

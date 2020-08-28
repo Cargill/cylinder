@@ -19,10 +19,9 @@ pub mod secp256k1;
 
 use std::error::Error as StdError;
 
-use crate::hex::{bytes_to_hex_str, hex_str_to_bytes};
-
 use super::{
-    PrivateKey, PublicKey, SignatureVerificationError, SignatureVerifier, Signer, SigningError,
+    PrivateKey, PublicKey, Signature, SignatureVerificationError, SignatureVerifier, Signer,
+    SigningError,
 };
 
 #[derive(Debug)]
@@ -85,7 +84,7 @@ pub trait Context: Send + Sync {
     /// # Returns
     ///
     /// * `signature` - The signature in a hex-encoded string
-    fn sign(&self, message: &[u8], key: &PrivateKey) -> Result<String, Error>;
+    fn sign(&self, message: &[u8], key: &PrivateKey) -> Result<Signature, Error>;
 
     /// Verifies that the signature of a message was produced with the
     /// associated public key.
@@ -99,7 +98,8 @@ pub trait Context: Send + Sync {
     ///
     /// * `boolean` - True if the public key is associated with the signature for that method,
     ///            False otherwise
-    fn verify(&self, signature: &str, message: &[u8], key: &PublicKey) -> Result<bool, Error>;
+    fn verify(&self, signature: &Signature, message: &[u8], key: &PublicKey)
+        -> Result<bool, Error>;
 
     /// Produce the public key for the given private key.
     /// # Arguments
@@ -121,10 +121,10 @@ impl<T: Context> SignatureVerifier for T {
     fn verify(
         &self,
         message: &[u8],
-        signature: &[u8],
+        signature: &Signature,
         public_key: &PublicKey,
     ) -> Result<bool, SignatureVerificationError> {
-        self.verify(&bytes_to_hex_str(signature), message, public_key)
+        self.verify(signature, message, public_key)
             .map_err(SignatureVerificationError::from)
     }
 }
@@ -219,7 +219,7 @@ impl<'a> ContextSigner<'a> {
     /// # Returns
     ///
     /// * `signature` - the signature in a hex-encoded string
-    pub fn sign(&self, message: &[u8]) -> Result<String, Error> {
+    pub fn sign(&self, message: &[u8]) -> Result<Signature, Error> {
         match &self.context_and_key {
             ContextAndKey::ByRef(context, key) => context.sign(message, *key),
             ContextAndKey::ByBox(context, key) => context.sign(message, &key),
@@ -240,10 +240,8 @@ impl<'a> ContextSigner<'a> {
 }
 
 impl<'a> Signer for ContextSigner<'a> {
-    fn sign(&self, message: &[u8]) -> Result<Vec<u8>, SigningError> {
-        self.sign(message)
-            .map_err(SigningError::from)
-            .and_then(|hex| hex_str_to_bytes(&hex).map_err(SigningError::from))
+    fn sign(&self, message: &[u8]) -> Result<Signature, SigningError> {
+        self.sign(message).map_err(SigningError::from)
     }
 
     fn public_key(&self) -> Result<PublicKey, SigningError> {
