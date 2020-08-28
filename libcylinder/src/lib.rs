@@ -19,10 +19,12 @@
 mod error;
 mod hex;
 mod key;
+mod signature;
 pub mod signing;
 
-pub use error::{SignatureVerificationError, SigningError};
+pub use error::{SignatureParseError, SignatureVerificationError, SigningError};
 pub use key::{KeyParseError, PrivateKey, PublicKey};
+pub use signature::Signature;
 
 /// A signer for arbitrary messages
 pub trait Signer: Send {
