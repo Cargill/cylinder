@@ -33,6 +33,16 @@ pub trait Signer: Send {
 
     /// Returns the signer's public key
     fn public_key(&self) -> Result<PublicKey, SigningError>;
+
+    /// Clone implementation for `Signer`. The implementation of the `Clone` trait for
+    /// `Box<dyn Signer>` calls this method.
+    fn clone_box(&self) -> Box<dyn Signer>;
+}
+
+impl Clone for Box<dyn Signer> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }
 
 /// Verifies message signatures

@@ -109,6 +109,10 @@ impl Signer for Secp256k1Signer {
                 .to_vec(),
         ))
     }
+
+    fn clone_box(&self) -> Box<dyn Signer> {
+        Box::new(self.clone())
+    }
 }
 
 #[derive(Clone)]
