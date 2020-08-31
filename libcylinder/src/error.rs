@@ -58,3 +58,15 @@ impl std::fmt::Display for SignatureVerificationError {
         }
     }
 }
+
+/// An error that can occur when parsing a signature
+#[derive(Debug)]
+pub struct SignatureParseError(pub String);
+
+impl Error for SignatureParseError {}
+
+impl std::fmt::Display for SignatureParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}

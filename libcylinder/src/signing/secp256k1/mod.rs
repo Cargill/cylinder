@@ -23,10 +23,9 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use rand::{rngs::OsRng, RngCore};
 
-use crate::hex::hex_str_to_bytes;
 use crate::signing::Context;
 use crate::signing::Error;
-use crate::{PrivateKey, PublicKey};
+use crate::{PrivateKey, PublicKey, Signature};
 
 impl From<secp256k1::Error> for Error {
     fn from(e: secp256k1::Error) -> Self {
@@ -57,7 +56,7 @@ impl Context for Secp256k1Context {
         "secp256k1"
     }
 
-    fn sign(&self, message: &[u8], key: &PrivateKey) -> Result<String, Error> {
+    fn sign(&self, message: &[u8], key: &PrivateKey) -> Result<Signature, Error> {
         let mut sha = Sha256::new();
         sha.input(message);
         let hash: &mut [u8] = &mut [0; 32];
@@ -68,14 +67,15 @@ impl Context for Secp256k1Context {
             .context
             .sign(&secp256k1::Message::from_slice(hash)?, &sk);
         let compact = sig.serialize_compact();
-        Ok(compact
-            .iter()
-            .map(|b| format!("{:02x}", b))
-            .collect::<Vec<_>>()
-            .join(""))
+        Ok(Signature::new(compact.to_vec()))
     }
 
-    fn verify(&self, signature: &str, message: &[u8], key: &PublicKey) -> Result<bool, Error> {
+    fn verify(
+        &self,
+        signature: &Signature,
+        message: &[u8],
+        key: &PublicKey,
+    ) -> Result<bool, Error> {
         let mut sha = Sha256::new();
         sha.input(message);
         let hash: &mut [u8] = &mut [0; 32];
@@ -83,9 +83,7 @@ impl Context for Secp256k1Context {
 
         let result = self.context.verify(
             &secp256k1::Message::from_slice(hash)?,
-            &secp256k1::Signature::from_compact(
-                &hex_str_to_bytes(&signature).map_err(|err| Error::ParseError(err.to_string()))?,
-            )?,
+            &secp256k1::Signature::from_compact(signature.as_slice())?,
             &secp256k1::key::PublicKey::from_slice(key.as_slice())?,
         );
         match result {
@@ -167,7 +165,7 @@ mod secp256k1_test {
 
         let signer = factory.new_signer(&priv_key);
         let signature = signer.sign(&String::from(MSG1).into_bytes()).unwrap();
-        assert_eq!(signature, MSG1_KEY1_SIG);
+        assert_eq!(signature, Signature::from_hex(MSG1_KEY1_SIG).unwrap());
     }
 
     fn create_signer() -> ContextSigner<'static> {
@@ -188,7 +186,7 @@ mod secp256k1_test {
     fn single_key_signing_return_from_func() {
         let signer = create_signer();
         let signature = signer.sign(&String::from(MSG1).into_bytes()).unwrap();
-        assert_eq!(signature, MSG1_KEY1_SIG);
+        assert_eq!(signature, Signature::from_hex(MSG1_KEY1_SIG).unwrap());
     }
 
     #[test]
@@ -207,12 +205,12 @@ mod secp256k1_test {
         let signature = context
             .sign(&String::from(MSG1).into_bytes(), &priv_key1)
             .unwrap();
-        assert_eq!(signature, MSG1_KEY1_SIG);
+        assert_eq!(signature, Signature::from_hex(MSG1_KEY1_SIG).unwrap());
 
         let signature = context
             .sign(&String::from(MSG2).into_bytes(), &priv_key2)
             .unwrap();
-        assert_eq!(signature, MSG2_KEY2_SIG);
+        assert_eq!(signature, Signature::from_hex(MSG2_KEY2_SIG).unwrap());
     }
 
     #[test]
@@ -223,7 +221,8 @@ mod secp256k1_test {
         let pub_key1 = PublicKey::new_from_hex(KEY1_PUB_HEX).expect("Failed to parse key from hex");
         assert_eq!(pub_key1.as_hex(), KEY1_PUB_HEX);
 
-        let result = context.verify(MSG1_KEY1_SIG, &String::from(MSG1).into_bytes(), &pub_key1);
+        let signature = Signature::from_hex(MSG1_KEY1_SIG).expect("Failed to parse signature");
+        let result = context.verify(&signature, &String::from(MSG1).into_bytes(), &pub_key1);
         assert_eq!(result.unwrap(), true);
     }
 
@@ -236,7 +235,8 @@ mod secp256k1_test {
         assert_eq!(pub_key1.as_hex(), KEY1_PUB_HEX);
 
         // This signature doesn't match for MSG1/KEY1
-        let result = context.verify(MSG2_KEY2_SIG, &String::from(MSG1).into_bytes(), &pub_key1);
+        let signature = Signature::from_hex(MSG2_KEY2_SIG).expect("Failed to parse signature");
+        let result = context.verify(&signature, &String::from(MSG1).into_bytes(), &pub_key1);
         assert_eq!(result.unwrap(), false);
     }
 }
