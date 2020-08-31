@@ -19,8 +19,8 @@
 mod error;
 mod hex;
 mod key;
+pub mod secp256k1;
 mod signature;
-pub mod signing;
 
 pub use error::{ContextError, SignatureParseError, SigningError, VerificationError};
 pub use key::{KeyParseError, PrivateKey, PublicKey};
