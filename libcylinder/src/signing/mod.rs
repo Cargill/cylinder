@@ -20,7 +20,7 @@ pub mod secp256k1;
 use std::error::Error as StdError;
 
 use super::{
-    PrivateKey, PublicKey, Signature, SignatureVerificationError, SignatureVerifier, Signer,
+    PrivateKey, PublicKey, Signature, VerificationError, Verifier, Signer,
     SigningError,
 };
 
@@ -63,7 +63,7 @@ impl From<Error> for SigningError {
     }
 }
 
-impl From<Error> for SignatureVerificationError {
+impl From<Error> for VerificationError {
     fn from(err: Error) -> Self {
         Self::Internal(err.to_string())
     }
@@ -117,15 +117,15 @@ pub trait Context: Send + Sync {
     fn new_random_private_key(&self) -> Result<PrivateKey, Error>;
 }
 
-impl<T: Context> SignatureVerifier for T {
+impl<T: Context> Verifier for T {
     fn verify(
         &self,
         message: &[u8],
         signature: &Signature,
         public_key: &PublicKey,
-    ) -> Result<bool, SignatureVerificationError> {
+    ) -> Result<bool, VerificationError> {
         self.verify(signature, message, public_key)
-            .map_err(SignatureVerificationError::from)
+            .map_err(VerificationError::from)
     }
 }
 

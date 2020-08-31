@@ -22,7 +22,7 @@ mod key;
 mod signature;
 pub mod signing;
 
-pub use error::{SignatureParseError, SignatureVerificationError, SigningError};
+pub use error::{SignatureParseError, VerificationError, SigningError};
 pub use key::{KeyParseError, PrivateKey, PublicKey};
 pub use signature::Signature;
 
@@ -36,12 +36,12 @@ pub trait Signer: Send {
 }
 
 /// Verifies message signatures
-pub trait SignatureVerifier: Send {
+pub trait Verifier: Send {
     /// Verifies that the provided signature is valid for the given message and public key
     fn verify(
         &self,
         message: &[u8],
         signature: &Signature,
         public_key: &PublicKey,
-    ) -> Result<bool, SignatureVerificationError>;
+    ) -> Result<bool, VerificationError>;
 }

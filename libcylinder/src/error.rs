@@ -45,13 +45,13 @@ impl From<HexError> for SigningError {
 
 /// An error that can occur with signature verification
 #[derive(Debug)]
-pub enum SignatureVerificationError {
+pub enum VerificationError {
     Internal(String),
 }
 
-impl Error for SignatureVerificationError {}
+impl Error for VerificationError {}
 
-impl std::fmt::Display for SignatureVerificationError {
+impl std::fmt::Display for VerificationError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Internal(msg) => f.write_str(msg),
