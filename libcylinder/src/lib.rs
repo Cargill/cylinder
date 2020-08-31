@@ -22,7 +22,7 @@ mod key;
 mod signature;
 pub mod signing;
 
-pub use error::{SignatureParseError, VerificationError, SigningError};
+pub use error::{ContextError, SignatureParseError, SigningError, VerificationError};
 pub use key::{KeyParseError, PrivateKey, PublicKey};
 pub use signature::Signature;
 
@@ -44,4 +44,19 @@ pub trait Verifier: Send {
         signature: &Signature,
         public_key: &PublicKey,
     ) -> Result<bool, VerificationError>;
+}
+
+/// A context for creating signers and verifiers
+pub trait Context {
+    /// Creates a new signer with the given private key
+    fn new_signer(&self, key: PrivateKey) -> Box<dyn Signer>;
+
+    /// Creates a new signature verifier
+    fn new_verifier(&self) -> Box<dyn Verifier>;
+
+    /// Generates a new random private key
+    fn new_random_private_key(&self) -> PrivateKey;
+
+    /// Computes the public key that corresponds to the given private key
+    fn get_public_key(&self, private_key: &PrivateKey) -> Result<PublicKey, ContextError>;
 }

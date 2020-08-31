@@ -59,6 +59,22 @@ impl std::fmt::Display for VerificationError {
     }
 }
 
+/// An error that can occur with contexts
+#[derive(Debug)]
+pub enum ContextError {
+    Internal(String),
+}
+
+impl Error for ContextError {}
+
+impl std::fmt::Display for ContextError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Internal(msg) => f.write_str(msg),
+        }
+    }
+}
+
 /// An error that can occur when parsing a signature
 #[derive(Debug)]
 pub struct SignatureParseError(pub String);

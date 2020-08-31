@@ -1,5 +1,6 @@
 /*
  * Copyright 2017 Intel Corporation
+ * Copyright 2018-2020 Cargill Incorporated
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +25,9 @@ use openssl::{
     symm::Cipher,
 };
 
-use crate::signing::{secp256k1::Secp256k1Context, Context, Error};
-use crate::{KeyParseError, PrivateKey};
+use crate::{Context, ContextError, KeyParseError, PrivateKey};
+
+use super::Secp256k1Context;
 
 pub fn private_key_from_pem(s: &str) -> Result<PrivateKey, KeyParseError> {
     let ec_key = EcKey::private_key_from_pem(s.as_bytes())?;
@@ -41,10 +43,9 @@ pub fn private_key_from_pem_with_password(s: &str, pw: &str) -> Result<PrivateKe
 
 fn to_ec_key(key: &PrivateKey) -> Result<EcKey<EcPrivate>, KeyParseError> {
     let mut bignum_ctx = BigNumContext::new()?;
-    let context = Secp256k1Context::new();
     let group = EcGroup::from_curve_name(Nid::SECP256K1)?;
     let key_bytes = BigNum::from_slice(key.as_slice())?;
-    let pubkey = context.get_public_key(key)?;
+    let pubkey = Secp256k1Context::new().get_public_key(&key)?;
     let pubkey = EcPoint::from_bytes(&group, pubkey.as_slice(), &mut bignum_ctx)?;
 
     Ok(EcKey::from_private_components(&group, &key_bytes, &pubkey)?)
@@ -74,8 +75,8 @@ impl From<ErrorStack> for KeyParseError {
     }
 }
 
-impl From<Error> for KeyParseError {
-    fn from(err: Error) -> Self {
+impl From<ContextError> for KeyParseError {
+    fn from(err: ContextError) -> Self {
         Self(err.to_string())
     }
 }
@@ -83,8 +84,6 @@ impl From<Error> for KeyParseError {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use crate::signing::create_context;
 
     static KEY1_PRIV_HEX: &'static str =
         "2f1e7b7a130d7ba9da0068b3bb0ba1d79e7e77110302c9f746c3c2a63fe40088";
@@ -100,8 +99,7 @@ mod tests {
 
     #[test]
     fn pem_roundtrip() {
-        let context = create_context("secp256k1").unwrap();
-        assert_eq!(context.get_algorithm_name(), "secp256k1");
+        let context = Secp256k1Context::new();
 
         // Without password
         let priv_key1 =
