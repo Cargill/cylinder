@@ -26,10 +26,11 @@ description = """\
 repository = "https://github.com/cargill/cylinder"
 
 [features]
-default = ["pem"]
+default = []
 
 stable = [
     "default",
+    "pem",
 ]
 
 experimental = [
