@@ -22,6 +22,7 @@ use std::error::Error;
 use crate::hex::{bytes_to_hex_str, hex_str_to_bytes, HexError};
 
 /// A public key
+#[derive(Clone)]
 pub struct PublicKey {
     bytes: Vec<u8>,
 }
@@ -60,6 +61,7 @@ impl std::fmt::Display for PublicKey {
 }
 
 /// A private key
+#[derive(Clone)]
 pub struct PrivateKey {
     bytes: Vec<u8>,
 }

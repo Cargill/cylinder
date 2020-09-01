@@ -19,10 +19,10 @@
 mod error;
 mod hex;
 mod key;
+pub mod secp256k1;
 mod signature;
-pub mod signing;
 
-pub use error::{SignatureParseError, SignatureVerificationError, SigningError};
+pub use error::{ContextError, SignatureParseError, SigningError, VerificationError};
 pub use key::{KeyParseError, PrivateKey, PublicKey};
 pub use signature::Signature;
 
@@ -33,15 +33,40 @@ pub trait Signer: Send {
 
     /// Returns the signer's public key
     fn public_key(&self) -> Result<PublicKey, SigningError>;
+
+    /// Clone implementation for `Signer`. The implementation of the `Clone` trait for
+    /// `Box<dyn Signer>` calls this method.
+    fn clone_box(&self) -> Box<dyn Signer>;
+}
+
+impl Clone for Box<dyn Signer> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }
 
 /// Verifies message signatures
-pub trait SignatureVerifier: Send {
+pub trait Verifier: Send {
     /// Verifies that the provided signature is valid for the given message and public key
     fn verify(
         &self,
         message: &[u8],
         signature: &Signature,
         public_key: &PublicKey,
-    ) -> Result<bool, SignatureVerificationError>;
+    ) -> Result<bool, VerificationError>;
+}
+
+/// A context for creating signers and verifiers
+pub trait Context {
+    /// Creates a new signer with the given private key
+    fn new_signer(&self, key: PrivateKey) -> Box<dyn Signer>;
+
+    /// Creates a new signature verifier
+    fn new_verifier(&self) -> Box<dyn Verifier>;
+
+    /// Generates a new random private key
+    fn new_random_private_key(&self) -> PrivateKey;
+
+    /// Computes the public key that corresponds to the given private key
+    fn get_public_key(&self, private_key: &PrivateKey) -> Result<PublicKey, ContextError>;
 }
