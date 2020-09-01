@@ -21,6 +21,22 @@ use cylinder::{Context, PrivateKey, Signature};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+/// Verifies that the round-trip of signing and verifying some bytes using a signer and verifier
+/// produced using the given context and private key.
+fn test_signing_and_verification<C: Context + 'static>(
+    context: C,
+    private_key: PrivateKey,
+) -> TestResult {
+    let signer = context.new_signer(private_key);
+    let signature = signer.sign(b"Hello")?;
+
+    let public_key = signer.public_key()?;
+    let verifier = context.new_verifier();
+    assert!(verifier.verify(b"Hello", &signature, &public_key)?);
+
+    Ok(())
+}
+
 /// Verifies that the given context can be used to create and share signers across multiple threads.
 fn test_multithreaded_signing<C: Context + 'static>(
     context: C,
@@ -47,6 +63,27 @@ fn test_multithreaded_signing<C: Context + 'static>(
     assert!(verifier.verify(b"Hello", &sig2, &public_key)?);
 
     Ok(())
+}
+
+#[cfg(feature = "hash")]
+mod hash {
+    use super::*;
+
+    use cylinder::hash::HashContext;
+
+    /// Verifies the round-trip signing and verifying of a message for the hash implementation
+    #[test]
+    fn signing_and_verification() -> TestResult {
+        let private_key = PrivateKey::new(vec![]);
+        test_signing_and_verification(HashContext, private_key)
+    }
+
+    /// Verifies the multithreaded signing capability of the hash implementation
+    #[test]
+    fn multithreaded_signing() -> TestResult {
+        let private_key = PrivateKey::new(vec![]);
+        test_multithreaded_signing(HashContext, private_key)
+    }
 }
 
 mod secp256k1 {

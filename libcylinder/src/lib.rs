@@ -17,6 +17,9 @@
  */
 
 mod error;
+#[cfg(feature = "hash")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hash")))]
+pub mod hash;
 mod hex;
 mod key;
 pub mod secp256k1;
