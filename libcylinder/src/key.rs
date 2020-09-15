@@ -22,7 +22,7 @@ use std::error::Error;
 use crate::hex::{bytes_to_hex_str, hex_str_to_bytes, HexError};
 
 /// A public key
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct PublicKey {
     bytes: Vec<u8>,
 }
@@ -51,6 +51,14 @@ impl PublicKey {
     /// Consumes the public key and returns it as bytes
     pub fn into_bytes(self) -> Vec<u8> {
         self.bytes
+    }
+}
+
+impl std::fmt::Debug for PublicKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("PublicKey")
+            .field("bytes", &self.as_hex())
+            .finish()
     }
 }
 
@@ -90,12 +98,6 @@ impl PrivateKey {
     /// Consumes the private key and returns it as bytes
     pub fn into_bytes(self) -> Vec<u8> {
         self.bytes
-    }
-}
-
-impl std::fmt::Display for PrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(&self.as_hex())
     }
 }
 
