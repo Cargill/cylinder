@@ -59,9 +59,13 @@ impl Context for Secp256k1Context {
     }
 
     fn new_random_private_key(&self) -> PrivateKey {
-        let mut key = [0u8; secp256k1::constants::SECRET_KEY_SIZE];
-        OsRng.fill_bytes(&mut key);
-        PrivateKey::new(Vec::from(&key[..]))
+        loop {
+            let mut key = [0u8; secp256k1::constants::SECRET_KEY_SIZE];
+            OsRng.fill_bytes(&mut key);
+            if secp256k1::SecretKey::from_slice(&key[..]).is_ok() {
+                break PrivateKey::new(Vec::from(&key[..]));
+            }
+        }
     }
 
     fn get_public_key(&self, private_key: &PrivateKey) -> Result<PublicKey, ContextError> {
