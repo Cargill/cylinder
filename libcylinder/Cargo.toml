@@ -48,7 +48,7 @@ pem = ["openssl"]
 openssl = { version = "0.10", optional = true }
 rand = "0.7"
 rust-crypto = "0.2"
-secp256k1 = "0.17"
+secp256k1 = "0.19"
 sha2 = { version = "0.9", optional = true }
 
 [package.metadata.docs.rs]
