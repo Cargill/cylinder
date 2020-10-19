@@ -1,5 +1,11 @@
 # Release Notes
 
+## Changes in Cylinder 0.1.2
+
+* `PublicKey` now implements `PartialEq` and `Debug`
+* Only return valid new random secp256k1 private keys.  This removes a rare, but
+  possible, bug where invalid keys could be generated.
+
 ## Changes in Cylinder 0.1.1
 
 ### Experimental Changes
