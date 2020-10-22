@@ -38,9 +38,11 @@ experimental = [
   "stable",
   # The following features are experimental:
   "hash",
+  "jwt",
 ]
 
 hash = ["sha2"]
+jwt = []
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
 

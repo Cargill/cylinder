@@ -21,6 +21,9 @@ mod error;
 #[cfg_attr(docsrs, doc(cfg(feature = "hash")))]
 pub mod hash;
 mod hex;
+#[cfg(feature = "jwt")]
+#[cfg_attr(docsrs, doc(cfg(feature = "jwt")))]
+pub mod jwt;
 mod key;
 pub mod secp256k1;
 mod signature;
