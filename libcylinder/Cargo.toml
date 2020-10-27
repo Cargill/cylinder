@@ -42,11 +42,13 @@ experimental = [
 ]
 
 hash = ["sha2"]
-jwt = []
+jwt = ["json", "base64"]
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
 
 [dependencies]
+base64 = { version = "0.13", optional = true }
+json = { version = "0.12", optional = true }
 openssl = { version = "0.10", optional = true }
 rand = "0.7"
 rust-crypto = "0.2"
