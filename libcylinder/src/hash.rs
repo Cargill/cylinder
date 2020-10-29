@@ -23,9 +23,15 @@ use super::{
     VerificationError, Verifier,
 };
 
+const ALGORITHM_NAME: &str = "sha512";
+
 pub struct HashContext;
 
 impl Context for HashContext {
+    fn algorithm_name(&self) -> &str {
+        ALGORITHM_NAME
+    }
+
     fn new_signer(&self, _key: PrivateKey) -> Box<dyn Signer> {
         Box::new(HashSigner)
     }
@@ -48,6 +54,10 @@ impl Context for HashContext {
 pub struct HashSigner;
 
 impl Signer for HashSigner {
+    fn algorithm_name(&self) -> &str {
+        ALGORITHM_NAME
+    }
+
     fn sign(&self, message: &[u8]) -> Result<Signature, SigningError> {
         Ok(Signature::new(Sha512::digest(message).to_vec()))
     }
@@ -65,6 +75,10 @@ impl Signer for HashSigner {
 pub struct HashVerifier;
 
 impl Verifier for HashVerifier {
+    fn algorithm_name(&self) -> &str {
+        ALGORITHM_NAME
+    }
+
     fn verify(
         &self,
         message: &[u8],

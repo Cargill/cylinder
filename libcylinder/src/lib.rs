@@ -34,6 +34,9 @@ pub use signature::Signature;
 
 /// A signer for arbitrary messages
 pub trait Signer: Send {
+    /// Return the algorithm name used for signing.
+    fn algorithm_name(&self) -> &str;
+
     /// Signs the given message
     fn sign(&self, message: &[u8]) -> Result<Signature, SigningError>;
 
@@ -53,6 +56,9 @@ impl Clone for Box<dyn Signer> {
 
 /// Verifies message signatures
 pub trait Verifier: Send {
+    /// Return the algorithm name used for verification.
+    fn algorithm_name(&self) -> &str;
+
     /// Verifies that the provided signature is valid for the given message and public key
     fn verify(
         &self,
@@ -64,6 +70,9 @@ pub trait Verifier: Send {
 
 /// A context for creating signers and verifiers
 pub trait Context {
+    /// Return the algorithm name provided by this context.
+    fn algorithm_name(&self) -> &str;
+
     /// Creates a new signer with the given private key
     fn new_signer(&self, key: PrivateKey) -> Box<dyn Signer>;
 

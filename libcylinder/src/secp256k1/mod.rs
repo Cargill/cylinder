@@ -31,6 +31,8 @@ use crate::{
     VerificationError, Verifier,
 };
 
+const ALGORITHM_NAME: &str = "secp256k1";
+
 pub struct Secp256k1Context {
     context: Arc<secp256k1::Secp256k1<secp256k1::All>>,
 }
@@ -50,6 +52,10 @@ impl Default for Secp256k1Context {
 }
 
 impl Context for Secp256k1Context {
+    fn algorithm_name(&self) -> &str {
+        ALGORITHM_NAME
+    }
+
     fn new_signer(&self, key: PrivateKey) -> Box<dyn Signer> {
         Box::new(Secp256k1Signer::new(self.context.clone(), key))
     }
@@ -91,6 +97,10 @@ impl Secp256k1Signer {
 }
 
 impl Signer for Secp256k1Signer {
+    fn algorithm_name(&self) -> &str {
+        ALGORITHM_NAME
+    }
+
     fn sign(&self, message: &[u8]) -> Result<Signature, SigningError> {
         let mut sha = Sha256::new();
         sha.input(message);
@@ -131,6 +141,10 @@ impl Secp256k1Verifier {
 }
 
 impl Verifier for Secp256k1Verifier {
+    fn algorithm_name(&self) -> &str {
+        ALGORITHM_NAME
+    }
+
     fn verify(
         &self,
         message: &[u8],
