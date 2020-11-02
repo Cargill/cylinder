@@ -108,7 +108,7 @@ impl JsonWebTokenBuilder {
         for (k, v) in self.header {
             jwt_header[k] = v.into();
         }
-        jwt_header["alg"] = "secp256k1".into();
+        jwt_header["alg"] = signer.algorithm_name().into();
         jwt_header["typ"] = "cylinder+jwt".into();
 
         // Header bytes are UTF-8 bytes of the JSON string representation of the header
@@ -199,9 +199,9 @@ impl<'a> JsonWebTokenParser<'a> {
                 ));
             }
 
-            if !object.has_key("alg") || object["alg"] != "secp256k1" {
+            if !object.has_key("alg") || object["alg"] != self.verifier.algorithm_name() {
                 return Err(JsonWebTokenParseError::InvalidToken(
-                    "JWT does not use a supported algoritm".into(),
+                    "JWT does not use a supported algorithm".into(),
                 ));
             }
 
@@ -519,5 +519,29 @@ mod tests {
         );
         // invalid JSON
         test_bad_header(&parser, "invalid_json");
+    }
+
+    /// This test creates a token with an alternate signer relative to the verifier used during
+    /// parsing of the token.
+    #[cfg(feature = "hash")]
+    #[test]
+    fn test_mismatched_algorithm() {
+        let context = crate::hash::HashContext;
+        let private_key = context.new_random_private_key();
+        let signer = context.new_signer(private_key);
+
+        let encoded_token = JsonWebTokenBuilder::new()
+            .build(&*signer)
+            .expect("Unable to generate auth JWT");
+
+        let context = Secp256k1Context::new();
+        let verifier = context.new_verifier();
+        let parser = JsonWebTokenParser::new(&*verifier);
+
+        match parser.parse(&encoded_token) {
+            Err(JsonWebTokenParseError::InvalidToken(_)) => (),
+            Err(err) => panic!("Unexpected error: {:?}", err),
+            Ok(_) => panic!("Should not have parsed the token"),
+        }
     }
 }
