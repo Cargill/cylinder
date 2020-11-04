@@ -1,5 +1,18 @@
 # Release Notes
 
+## Changes in Cylinder 0.2.0
+
+* `Signer`, `Verifier` and `Context` traits now require a method
+  `algorithm_name(&self) -> &str`,
+
+### Experimental Changes
+
+* Add an experimental module to produce Cylinder-extended JSON Web Tokens.
+  These JWT's use Cylinder's core `Signer` and `Verifier` traits to provide an
+  avenue for applying custom signing algorithm options. The JWT's assume the
+  public key of the `Signer` to be the "issuer" of the token.  This module is
+  guarded by the experimental `jwt` feature.
+
 ## Changes in Cylinder 0.1.2
 
 * `PublicKey` now implements `PartialEq` and `Debug`
