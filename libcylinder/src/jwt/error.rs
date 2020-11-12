@@ -18,7 +18,7 @@
 use std::error::Error;
 use std::fmt;
 
-/// An error that may occur while building the token.
+/// An error that may occur while building a JWT.
 #[derive(Debug)]
 pub struct JsonWebTokenBuildError {
     message: String,
@@ -26,7 +26,7 @@ pub struct JsonWebTokenBuildError {
 }
 
 impl JsonWebTokenBuildError {
-    /// Construct a new error.
+    /// Constructs a new error.
     pub fn new<E: Into<Box<dyn Error>>>(message: String, source: E) -> Self {
         Self {
             message,
@@ -47,7 +47,7 @@ impl Error for JsonWebTokenBuildError {
     }
 }
 
-/// A JWT string could not be parsed or validated.
+/// An error that may occur while parsing or validating a JWT string.
 #[derive(Debug)]
 pub enum JsonWebTokenParseError {
     InvalidToken(String),

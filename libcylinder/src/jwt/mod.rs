@@ -15,8 +15,8 @@
  * ------------------------------------------------------------------------------
  */
 
-//! Provides a set of APIs to both generate JSON Web Tokens with cylinder signing algorithms, as
-//! well as parse and cryptographically validate the contents of the strings.
+//! Provides a set of APIs to both generate JSON Web Tokens (JWTs) with cylinder signing algorithms,
+//! as well as parse and cryptographically validate the contents of the strings.
 
 mod error;
 
@@ -34,7 +34,7 @@ pub struct JsonWebTokenBuilder {
 }
 
 impl JsonWebTokenBuilder {
-    /// Construct a new instance of the builder.
+    /// Constructs a new instance of the builder.
     pub fn new() -> Self {
         Self {
             header: HashMap::with_capacity(0),
@@ -42,9 +42,9 @@ impl JsonWebTokenBuilder {
         }
     }
 
-    /// Set the header of the token.
+    /// Sets the header of the token.
     ///
-    /// The standard header keys of "alg" and "typ" will be added to the resulting JSON object. If
+    /// The standard header keys of `alg` and `typ` will be added to the resulting JSON object. If
     /// these keys are included in the given map, they will be overridden at build time.
     pub fn with_header(mut self, header: HashMap<String, String>) -> Self {
         self.header = header;
@@ -52,9 +52,9 @@ impl JsonWebTokenBuilder {
         self
     }
 
-    /// Set the claims of the token.
+    /// Sets the claims of the token.
     ///
-    /// Th standard header of "iss" (issuer) will be added to the resulting JSON object. This will
+    /// The standard header of `iss` (issuer) will be added to the resulting JSON object. This will
     /// be set to the public key value of the signer used at build time. If the key is included in
     /// the given map, it will be overridden.
     pub fn with_claims(mut self, claims: HashMap<String, String>) -> Self {
@@ -63,17 +63,19 @@ impl JsonWebTokenBuilder {
         self
     }
 
-    /// Serialize and signs the JsonWebToken.
+    /// Serializes and signs the JsonWebToken.
+    ///
+    /// # Examples
     ///
     /// ```
-    /// # use std::collections::HashMap;
-    /// # use cylinder::{jwt::JsonWebTokenBuilder, PrivateKey, Context, Signer, secp256k1::Secp256k1Context};
-    /// # let context = Secp256k1Context::new();
-    /// # let private_key = PrivateKey::new(vec![
-    /// #     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    /// #     0, 0, 1,
-    /// # ]);
-    /// # let signer = context.new_signer(private_key);
+    /// use std::collections::HashMap;
+    /// use cylinder::{
+    ///     jwt::JsonWebTokenBuilder, PrivateKey, Context, Signer, secp256k1::Secp256k1Context
+    /// };
+    ///
+    /// let context = Secp256k1Context::new();
+    /// let private_key = context.new_random_private_key();
+    /// let signer = context.new_signer(private_key);
     ///
     /// let mut header = HashMap::new();
     /// header.insert("example".into(), "header".into());
@@ -90,18 +92,16 @@ impl JsonWebTokenBuilder {
     ///
     /// The resulting string is
     ///
-    ///  ```
+    ///  ```ignore
     ///  "[Base-64-encoded bytes of the UTF-8 string of the header JSON].\
     ///   [Base-64-encoded bytes of the UTF-8 string of the claims JSON].\
     ///   [Base-64-encoded signature]"
-    ///   # ;
-    ///   # ()
     ///  ```
     ///
     /// # Errors
     ///
-    /// A `JsonWebTokenBuildError` may be returned if the token can not be properly built or
-    /// signed.
+    /// A [`JsonWebTokenBuildError`](struct.JsonWebTokenBuildError.html) may be returned if the
+    /// token can not be properly built or signed.
     pub fn build(self, signer: &dyn Signer) -> Result<String, JsonWebTokenBuildError> {
         let mut jwt_header = json::JsonValue::new_object();
 
@@ -148,25 +148,23 @@ impl JsonWebTokenBuilder {
     }
 }
 
-/// Parses JsonWebToken struct from an encoded token.  The token's signature is verified before the
-/// parsed value is returned.
+/// Parses a [`JsonWebToken`](struct.JsonWebToken.html) from an encoded token.
 pub struct JsonWebTokenParser<'a> {
     verifier: &'a dyn Verifier,
 }
 
 impl<'a> JsonWebTokenParser<'a> {
-    /// Construct a new parser instance around the given verifier.
+    /// Constructs a new parser instance around the given verifier.
     pub fn new(verifier: &'a dyn Verifier) -> Self {
         Self { verifier }
     }
 
-    /// Parse the token string provided and verify the included signature
-    /// with the parser's Verifier instance.
+    /// Parses the token string provided and verifies the included signature.
     ///
     /// # Errors
     ///
-    /// A `JsonWebTokenParseError` may be returned if the token is not properly formed or the
-    /// signature is not valid.
+    /// A [`JsonWebTokenParseError`](enum.JsonWebTokenParseError.html) may be returned if the token
+    /// is not properly formed or the signature is not valid.
     pub fn parse(&self, jwt_string: &str) -> Result<JsonWebToken, JsonWebTokenParseError> {
         let mut encoded_token_parts = jwt_string.split('.');
         let (encoded_header, encoded_claims, encoded_signature) = {
@@ -291,7 +289,7 @@ impl<'a> JsonWebTokenParser<'a> {
     }
 }
 
-/// JsonWebToken struct used for validation.
+/// Native representation of a JSON web token used for validation.
 #[derive(Debug)]
 pub struct JsonWebToken {
     issuer: PublicKey,
@@ -300,17 +298,17 @@ pub struct JsonWebToken {
 }
 
 impl JsonWebToken {
-    /// Return the header map for this JsonWebToken
+    /// Returns the header map for this JWT
     pub fn header(&self) -> &HashMap<String, String> {
         &self.header
     }
 
-    /// Return the claims map for this JsonWebToken
+    /// Returns the claims map for this JWT
     pub fn claims(&self) -> &HashMap<String, String> {
         &self.claims
     }
 
-    /// Return the public key of the issuer of this JsonWebToken
+    /// Returns the public key of the issuer of this JWT
     pub fn issuer(&self) -> &PublicKey {
         &self.issuer
     }
