@@ -68,8 +68,14 @@ pub trait Verifier: Send {
     ) -> Result<bool, VerificationError>;
 }
 
+/// A factory for creating verifiers
+pub trait VerifierFactory: Send {
+    /// Creates a new signature verifier
+    fn new_verifier(&self) -> Box<dyn Verifier>;
+}
+
 /// A context for creating signers and verifiers
-pub trait Context {
+pub trait Context: Send {
     /// Return the algorithm name provided by this context.
     fn algorithm_name(&self) -> &str;
 
@@ -84,4 +90,10 @@ pub trait Context {
 
     /// Computes the public key that corresponds to the given private key
     fn get_public_key(&self, private_key: &PrivateKey) -> Result<PublicKey, ContextError>;
+}
+
+impl<T: Context> VerifierFactory for T {
+    fn new_verifier(&self) -> Box<dyn Verifier> {
+        Context::new_verifier(self)
+    }
 }
