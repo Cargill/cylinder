@@ -69,7 +69,7 @@ pub trait Verifier: Send {
 }
 
 /// A context for creating signers and verifiers
-pub trait Context {
+pub trait Context: Send {
     /// Return the algorithm name provided by this context.
     fn algorithm_name(&self) -> &str;
 
