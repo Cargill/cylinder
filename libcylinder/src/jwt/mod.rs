@@ -609,6 +609,54 @@ mod tests {
         test_bad_header(&parser, "invalid_json");
     }
 
+    /// This test creates a token that has bad base64 values.  It should fail to parse.
+    #[test]
+    fn test_bad_base64() {
+        let context = Secp256k1Context::new();
+        let verifier = context.new_verifier();
+        let parser = JsonWebTokenParser::new(&*verifier);
+
+        match parser.parse("This is bad base64.because it has whitespace.but all the correct parts")
+        {
+            Err(JsonWebTokenParseError::InvalidToken(_)) => (),
+            Err(err) => panic!("Unexpected error: {:?}", err),
+            Ok(_) => panic!("Should not have parsed the token"),
+        }
+    }
+
+    /// This test creates a token with an alternative signing algorithm as well as verifies it
+    /// using the same algorithm.
+    #[cfg(feature = "hash")]
+    #[test]
+    fn test_alternative_algorithm() {
+        let context = crate::hash::HashContext;
+        let private_key = context.new_random_private_key();
+        let signer = context.new_signer(private_key);
+
+        let mut header = HashMap::new();
+        header.insert("test".into(), "hello".into());
+
+        let encoded_token = JsonWebTokenBuilder::new()
+            .with_header(header)
+            .build(&*signer)
+            .expect("Unable to generate auth JWT");
+
+        let verifier = context.new_verifier();
+        let json_web_token = JsonWebTokenParser::new(&*verifier)
+            .parse(&encoded_token)
+            .expect("Unable to get public key from JWT");
+
+        assert_eq!(
+            &signer.public_key().expect("could not get pubkey"),
+            json_web_token.issuer()
+        );
+
+        assert_eq!(
+            Some(&"hello".to_string()),
+            json_web_token.header().get("test")
+        );
+    }
+
     /// This test creates a token with an alternate signer relative to the verifier used during
     /// parsing of the token.
     #[cfg(feature = "hash")]
