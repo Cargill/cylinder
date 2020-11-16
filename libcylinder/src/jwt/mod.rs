@@ -17,6 +17,96 @@
 
 //! Provides a set of APIs to both generate JSON Web Tokens (JWTs) with cylinder signing algorithms,
 //! as well as parse and cryptographically validate the contents of the strings.
+//!
+//! The JWT header follows the standard, minimally consisting of a type (`"typ"`) of
+//! `"cylinder+jwt"` and an algorithm (`"alg"`) value that depends on the Signer implementation.
+//!
+//! The claims section of the JWT automatically includes this issuer (`"iss"`) field.  This field
+//! is set to public key of the token's signer.  In other words, a Cylinder JWT is issued by the
+//! signing party.
+//!
+//! While this format will still be parseable by other JWT libraries, most likely the signing
+//! algorithm specified in the header will not be understood.
+//!
+//! The token produced is actually JWT-like, as the algorithms currently provided by Cylinder are
+//! not part of the standard set.  The implementation only provides the ability to create flat JSON
+//! objects, both for the header and for the claims.  Complex, nested JSON objects are beyond the
+//! scope of this initial design.
+//!
+//! Cylinder JWT is guarded by the feature `"jwt"`.
+//!
+//! # Example
+//!
+//! ## Creating a token
+//!
+//! The token is created via the `JsonWebTokenBuilder`, and may be signed with any `Signer`
+//! implementation.
+//!
+//!
+//! ```
+//! use std::collections::HashMap;
+//! use cylinder::{
+//!     jwt::JsonWebTokenBuilder, PrivateKey, Context, Signer, secp256k1::Secp256k1Context
+//! };
+//!
+//! let context = Secp256k1Context::new();
+//! let private_key = context.new_random_private_key();
+//! let signer = context.new_signer(private_key);
+//!
+//! let mut header = HashMap::new();
+//! header.insert("example".into(), "header".into());
+//!
+//! let mut claims = HashMap::new();
+//! claims.insert("example".into(), "claim".into());
+//!
+//! let encoded_token = JsonWebTokenBuilder::new()
+//!     .with_header(header)
+//!     .with_claims(claims)
+//!     .build(&*signer)
+//!     .expect("Unable to generate auth JWT");
+//! ```
+//!
+//! The resulting string is
+//!
+//!  ```ignore
+//!  "[Base-64-encoded bytes of the UTF-8 string of the header JSON].\
+//!   [Base-64-encoded bytes of the UTF-8 string of the claims JSON].\
+//!   [Base-64-encoded signature]"
+//!  ```
+//!
+//! ## Parsing and Verifying
+//!
+//! The token produced can be parsed and validated, using a Verifier instance matching the signing
+//! algorithm.
+//!
+//!```
+//! # use std::collections::HashMap;
+//! # use cylinder::jwt::JsonWebTokenBuilder;
+//! # use cylinder::{PrivateKey, Signer};
+//! use cylinder::{
+//!     jwt::JsonWebTokenParser, Context, Verifier, secp256k1::Secp256k1Context
+//! };
+//!
+//! let context = Secp256k1Context::new();
+//! # let private_key = context.new_random_private_key();
+//! # let signer = context.new_signer(private_key);
+//! # let mut header = HashMap::new();
+//! # header.insert("example".into(), "header".into());
+//! # let mut claims = HashMap::new();
+//! # claims.insert("example".into(), "claim".into());
+//! # let encoded_token = JsonWebTokenBuilder::new()
+//! #     .with_header(header)
+//! #     .with_claims(claims)
+//! #     .build(&*signer)
+//! #     .expect("Unable to generate auth JWT");
+//! let verifier = context.new_verifier();
+//! let parser = JsonWebTokenParser::new(&*verifier);
+//! let jwt = parser.parse(&encoded_token)
+//!     .expect("Unable to parse token");
+//!
+//! assert_eq!(jwt.header().get("example"), Some(&String::from("header")));
+//! assert_eq!(jwt.claims().get("example"), Some(&String::from("claim")));
+//! ```
 
 mod error;
 
