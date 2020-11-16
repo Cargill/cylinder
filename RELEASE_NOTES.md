@@ -1,5 +1,17 @@
 # Release Notes
 
+## Changes in Cylinder 0.2.1
+
+* Add the `VerifierFactory` trait that provides a concise API for creating
+  signature verifiers.
+* Require the `Send` marker trait for all implementations of the `Context` trait.
+
+### Experimental Changes
+
+* Improve testing and documentation of the `jwt` module
+* Add the `load_user_key` function for loading a key from a file. This function
+  is guarded by the experimental `key-load` feature.
+
 ## Changes in Cylinder 0.2.0
 
 * `Signer`, `Verifier` and `Context` traits now require a method
