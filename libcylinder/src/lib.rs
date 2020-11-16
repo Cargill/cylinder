@@ -29,6 +29,8 @@ pub mod secp256k1;
 mod signature;
 
 pub use error::{ContextError, SignatureParseError, SigningError, VerificationError};
+#[cfg(feature = "key-load")]
+pub use key::load::load_user_key;
 pub use key::{KeyParseError, PrivateKey, PublicKey};
 pub use signature::Signature;
 

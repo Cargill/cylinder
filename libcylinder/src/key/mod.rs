@@ -21,6 +21,9 @@ use std::error::Error;
 
 use crate::hex::{bytes_to_hex_str, hex_str_to_bytes, HexError};
 
+#[cfg(feature = "key-load")]
+pub(crate) mod load;
+
 /// A public key
 #[derive(Clone, PartialEq)]
 pub struct PublicKey {
