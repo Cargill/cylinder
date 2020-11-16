@@ -112,7 +112,6 @@ fn read_private_key(path: PathBuf) -> Result<PrivateKey, KeyLoadError> {
             err,
         ))
     })?;
-    // let key = buf.trim().to_string();
     let key = match buf.lines().next() {
         Some(k) => k.trim().to_string(),
         None => {
