@@ -86,3 +86,15 @@ impl std::fmt::Display for SignatureParseError {
         f.write_str(&self.0)
     }
 }
+
+/// An error that can occur when loading a key
+#[derive(Debug)]
+pub struct KeyLoadError(pub String);
+
+impl Error for KeyLoadError {}
+
+impl std::fmt::Display for KeyLoadError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
