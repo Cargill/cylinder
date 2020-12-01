@@ -30,6 +30,7 @@ default = []
 
 stable = [
     "default",
+    "jwt",
     "pem",
 ]
 
@@ -38,7 +39,6 @@ experimental = [
   "stable",
   # The following features are experimental:
   "hash",
-  "jwt",
   "key-load",
 ]
 
