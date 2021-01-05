@@ -15,6 +15,54 @@
  * ------------------------------------------------------------------------------
  */
 
+//! Provides an API to retrieve private keys.
+//!
+//! Some tests in this module are run serially using the `serial_test` crate with the
+//! `#[serial(env_var)]` annotation added to the individual tests. This is required because
+//! multiple tests alter the same environment variables and may conflict with each other if
+//! run in parallel.
+//!
+//! Cylinder key load is guarded by the feature "key-load".
+//!
+//! # Example
+//!
+//! ## Retrieving a private key from a given path
+//!
+//! ```
+//! use std::path::Path;
+//! use cylinder::{load_key, load_key_from_path};
+//!
+//! let private_key_path = Path::new("/etc/splinter/keys/private_key.priv");
+//! let private_key = load_key_from_path(&private_key_path);
+//! ```
+//!
+//! ## Load private key from `current_user_search_path()` and `current_user_key_name()`
+//!
+//! ```
+//! use std::path::Path;
+//! use cylinder::{load_key, load_key_from_path, current_user_key_name, current_user_search_path};
+//!
+//! let search_path = current_user_search_path();
+//! let key_name = current_user_key_name();
+//!
+//! let private_key = cylinder::load_key(&key_name, &search_path);
+//! ```
+//!
+//! ## Load private key from a given path and name
+//!
+//! ```
+//! use std::path::{Path, PathBuf};
+//! use cylinder::{load_key, load_key_from_path};
+//!
+//! let mut path = PathBuf::new();
+//! path.push("/etc/splinter/keys");
+//!
+//! let search_path = vec![path];
+//! let key_name = "splinterd";
+//!
+//! let private_key = cylinder::load_key(key_name, &search_path);
+//!  ```
+
 use std::env;
 use std::fs::File;
 use std::io::{ErrorKind, Read};
