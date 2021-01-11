@@ -16,6 +16,10 @@
  * ------------------------------------------------------------------------------
  */
 
+#[cfg(feature = "key-load")]
+#[macro_use]
+extern crate log;
+
 mod error;
 #[cfg(feature = "hash")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hash")))]
@@ -28,9 +32,17 @@ mod key;
 pub mod secp256k1;
 mod signature;
 
-pub use error::{ContextError, KeyLoadError, SignatureParseError, SigningError, VerificationError};
 #[cfg(feature = "key-load")]
-pub use key::load::load_user_key;
+pub use error::KeyLoadError;
+pub use error::{ContextError, SignatureParseError, SigningError, VerificationError};
+#[cfg(feature = "key-load")]
+pub use key::load::current_user_key_name;
+#[cfg(feature = "key-load")]
+pub use key::load::current_user_search_path;
+#[cfg(feature = "key-load")]
+pub use key::load::load_key;
+#[cfg(feature = "key-load")]
+pub use key::load::load_key_from_path;
 pub use key::{KeyParseError, PrivateKey, PublicKey};
 pub use signature::Signature;
 

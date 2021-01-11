@@ -89,12 +89,47 @@ impl std::fmt::Display for SignatureParseError {
 
 /// An error that can occur when loading a key
 #[derive(Debug)]
-pub struct KeyLoadError(pub String);
+#[cfg(feature = "key-load")]
+pub struct KeyLoadError {
+    message: String,
+    source: Option<Box<dyn Error>>,
+}
 
-impl Error for KeyLoadError {}
+#[cfg(feature = "key-load")]
+impl KeyLoadError {
+    pub fn new(message: &str) -> Self {
+        Self {
+            message: message.into(),
+            source: None,
+        }
+    }
 
+    pub fn with_source(source: Box<dyn Error>, message: &str) -> Self {
+        Self {
+            message: message.into(),
+            source: Some(source),
+        }
+    }
+}
+
+#[cfg(feature = "key-load")]
+impl Error for KeyLoadError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        if let Some(ref err) = self.source {
+            Some(&**err)
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(feature = "key-load")]
 impl std::fmt::Display for KeyLoadError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(&self.0)
+        if let Some(ref err) = self.source {
+            write!(f, "{}: {}", self.message, err)
+        } else {
+            f.write_str(&self.message)
+        }
     }
 }
