@@ -98,13 +98,19 @@ pub fn current_user_search_path() -> Vec<PathBuf> {
             vec![dir]
         }
         Err(env::VarError::NotPresent) => {
-            let mut dir = match dirs::home_dir() {
+            let mut dir1 = match dirs::home_dir() {
                 Some(dir) => dir,
                 None => Path::new(".").to_path_buf(),
             };
-            dir.push(".cylinder");
-            dir.push("keys");
-            vec![dir]
+            dir1.push(".splinter");
+            dir1.push("keys");
+            let mut dir2 = match dirs::home_dir() {
+                Some(dir) => dir,
+                None => Path::new(".").to_path_buf(),
+            };
+            dir2.push(".cylinder");
+            dir2.push("keys");
+            vec![dir1, dir2]
         }
     }
 }
