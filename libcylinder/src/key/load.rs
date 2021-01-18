@@ -217,19 +217,15 @@ fn load_key_from_file(file: File) -> Result<PrivateKey, KeyLoadError> {
     key_file
         .read_to_string(&mut buf)
         .map_err(|err| KeyLoadError::with_source(Box::new(err), "Unable to read key file"))?;
-    let key = match buf.lines().next() {
-        Some(k) => k.trim().to_string(),
-        None => {
-            return Err(KeyLoadError::new(&format!(
-                "Empty key file: {:?}",
-                key_file
-            )));
-        }
-    };
-
-    Ok(PrivateKey::new_from_hex(&key).map_err(|err| {
-        KeyLoadError::with_source(Box::new(err), "unable to create private key from hex: {}")
-    })?)
+    match buf.lines().next() {
+        Some(key) => PrivateKey::new_from_hex(key.trim()).map_err(|err| {
+            KeyLoadError::with_source(Box::new(err), "unable to create private key from hex")
+        }),
+        None => Err(KeyLoadError::new(&format!(
+            "Empty key file: {:?}",
+            key_file
+        ))),
+    }
 }
 
 #[cfg(test)]
