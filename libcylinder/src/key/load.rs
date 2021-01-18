@@ -72,9 +72,12 @@ use crate::error::KeyLoadError;
 use crate::PrivateKey;
 
 /// Returns a list of possible paths to search for the private key file.
-/// The value of the `CYLINDER_PATH` environment variable will returned if it exists
-/// and is valid unicode. If the value of the `CYLINDER_PATH` environment variable
-/// is not valid unicode or is not set, the default path will be returned.
+///
+/// The value of the `CYLINDER_PATH` environment variable will be returned if it exists and is valid
+/// unicode. The environment variable may contain multiple paths separated by `:`. If the value of
+/// the `CYLINDER_PATH` environment variable is not valid unicode or is not set, this function will
+/// check for a home directory and return the path `~/.cylinder/keys`. If no home directory is
+/// found, the path `./.cylinder/keys` will be returned.
 pub fn current_user_search_path() -> Vec<PathBuf> {
     match env::var("CYLINDER_PATH") {
         Ok(value) => value
@@ -106,10 +109,11 @@ pub fn current_user_search_path() -> Vec<PathBuf> {
     }
 }
 
-/// Returns the name of the current private key file. The value of the
-/// `CYLINDER_KEY_NAME` environment variable will be returned if it exists and
-/// is valid unicode. If the value of the `CYLINDER_KEY_NAME` environment variable
-/// is not valid unicode or is not set, the default path will be returned.
+/// Returns the name of the current private key file.
+///
+/// The value of the `CYLINDER_KEY_NAME` environment variable will be returned if it exists and is
+/// is valid unicode. If the value of the `CYLINDER_KEY_NAME` environment variable is not valid
+/// unicode or is not set, the current user's username will be returned.
 pub fn current_user_key_name() -> String {
     match env::var("CYLINDER_KEY_NAME") {
         Ok(value) => value,
@@ -131,6 +135,8 @@ pub fn current_user_key_name() -> String {
 ///
 /// * `name` - The name of the private key file
 /// * `search_path` - The private key file path
+///
+/// # Errors
 ///
 /// Returns an error in any of the following cases:
 /// * The given file cannot be opened
@@ -171,9 +177,11 @@ pub fn load_key(name: &str, search_path: &[PathBuf]) -> Result<Option<PrivateKey
 ///
 /// * `path` - The full path of the private key file
 ///
+/// # Errors
+///
 /// Returns an error in any of the following cases:
 /// * The given file cannot be opened
-/// * `load_key_from_file` cannot retrieve the key from the file
+/// * The key cannot be loaded from the given file
 pub fn load_key_from_path(path: &Path) -> Result<PrivateKey, KeyLoadError> {
     match File::open(&path) {
         Ok(f) => match load_key_from_file(f) {
@@ -196,6 +204,8 @@ pub fn load_key_from_path(path: &Path) -> Result<PrivateKey, KeyLoadError> {
 ///
 /// * `file` - The open key file
 ///
+/// # Errors
+///
 /// Returns an error in any of the following cases:
 /// * The given file cannot be read
 /// * The file is empty
@@ -207,19 +217,15 @@ fn load_key_from_file(file: File) -> Result<PrivateKey, KeyLoadError> {
     key_file
         .read_to_string(&mut buf)
         .map_err(|err| KeyLoadError::with_source(Box::new(err), "Unable to read key file"))?;
-    let key = match buf.lines().next() {
-        Some(k) => k.trim().to_string(),
-        None => {
-            return Err(KeyLoadError::new(&format!(
-                "Empty key file: {:?}",
-                key_file
-            )));
-        }
-    };
-
-    Ok(PrivateKey::new_from_hex(&key).map_err(|err| {
-        KeyLoadError::with_source(Box::new(err), "unable to create private key from hex: {}")
-    })?)
+    match buf.lines().next() {
+        Some(key) => PrivateKey::new_from_hex(key.trim()).map_err(|err| {
+            KeyLoadError::with_source(Box::new(err), "unable to create private key from hex")
+        }),
+        None => Err(KeyLoadError::new(&format!(
+            "Empty key file: {:?}",
+            key_file
+        ))),
+    }
 }
 
 #[cfg(test)]
@@ -232,8 +238,8 @@ mod tests {
     use std::io::Write;
     use tempdir::TempDir;
 
-    /// Tests that when `load_key` is called with a valid key name and path it successfully returns the
-    /// private key.
+    /// Tests that when `load_key` is called with a valid key name and path it successfully returns
+    /// the private key.
     ///
     /// 1. Create a private key file in a temporary directory and write a key to the file.
     /// 2. Call `load_key` with the private key file name and path
