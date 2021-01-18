@@ -218,7 +218,7 @@ fn load_key_from_file(file: File) -> Result<PrivateKey, KeyLoadError> {
     };
 
     Ok(PrivateKey::new_from_hex(&key).map_err(|err| {
-        KeyLoadError::with_source(Box::new(err), "unable to create private key from hex: {}")
+        KeyLoadError::with_source(Box::new(err), "Unable to create private key from hex")
     })?)
 }
 
