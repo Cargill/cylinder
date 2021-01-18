@@ -1,5 +1,12 @@
 # Release Notes
 
+## Changes in Cylinder 0.2.2
+
+* Stabilize the `jwt` and `key-load` features.
+* Replace the `load_user_key` function with 4 new key loading functions:
+  `current_user_search_path`, `current_user_key_name`, `load_key`, and
+  `load_key_from_path`.
+
 ## Changes in Cylinder 0.2.1
 
 * Add the `VerifierFactory` trait that provides a concise API for creating
