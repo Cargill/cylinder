@@ -115,11 +115,7 @@ impl KeyLoadError {
 #[cfg(feature = "key-load")]
 impl Error for KeyLoadError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        if let Some(ref err) = self.source {
-            Some(&**err)
-        } else {
-            None
-        }
+        self.source.as_deref()
     }
 }
 
