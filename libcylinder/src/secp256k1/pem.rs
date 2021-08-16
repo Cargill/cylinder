@@ -45,7 +45,7 @@ fn to_ec_key(key: &PrivateKey) -> Result<EcKey<EcPrivate>, KeyParseError> {
     let mut bignum_ctx = BigNumContext::new()?;
     let group = EcGroup::from_curve_name(Nid::SECP256K1)?;
     let key_bytes = BigNum::from_slice(key.as_slice())?;
-    let pubkey = Secp256k1Context::new().get_public_key(&key)?;
+    let pubkey = Secp256k1Context::new().get_public_key(key)?;
     let pubkey = EcPoint::from_bytes(&group, pubkey.as_slice(), &mut bignum_ctx)?;
 
     Ok(EcKey::from_private_components(&group, &key_bytes, &pubkey)?)

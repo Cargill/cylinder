@@ -57,7 +57,7 @@ pub enum JsonWebTokenParseError {
 impl fmt::Display for JsonWebTokenParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            JsonWebTokenParseError::InvalidToken(msg) => f.write_str(&msg),
+            JsonWebTokenParseError::InvalidToken(msg) => f.write_str(msg),
             JsonWebTokenParseError::InvalidSignature => f.write_str("The signature was invalid"),
         }
     }
