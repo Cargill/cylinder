@@ -432,46 +432,6 @@ mod tests {
     }
 
     /// Tests that when the CYLINDER_KEY_NAME and CYLINDER_PATH environment variables are not set
-    /// and a private key file does not exist at the default location `key_load` will return None
-    /// when passed current_user_key_name() and current_user_search_path() as arguments.
-    ///
-    /// 1. Create a private key file in a temporary directory and write a key to the file.
-    /// 2. Remove the CYLINDER_KEY_NAME and CYLINDER_PATH environment variables.
-    /// 3. Ensure the environment variables don't exist.
-    /// 4. Call `load_key` with current_user_key_name() and current_user_search_path() as arguments.
-    /// 5. Ensure that None is returned.
-    #[test]
-    #[serial(env_var)]
-    fn load_key_none_success() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
-
-        let key_name = "test_key.priv";
-
-        let key_path = temp_dir.path().join(key_name);
-
-        env::remove_var("CYLINDER_KEY_NAME");
-        env::remove_var("CYLINDER_PATH");
-        assert!(env::var("CYLINDER_KEY_NAME").is_err());
-        assert!(env::var("CYLINDER_PATH").is_err());
-
-        let mut temp_file =
-            File::create(&key_path).expect("Unable to create temp private key file");
-
-        let private_key = PrivateKey::new(vec![
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 1,
-        ]);
-
-        writeln!(temp_file, "{}", private_key.as_hex())
-            .expect("Unable to write private key to file");
-
-        let retrieved_private_key = load_key(&current_user_key_name(), &current_user_search_path())
-            .expect("Unable retrieve key from file");
-
-        assert!(retrieved_private_key.is_none());
-    }
-
-    /// Tests that when the CYLINDER_KEY_NAME and CYLINDER_PATH environment variables are not set
     /// and a private key file exists at the default location, `key_load` will successfully
     /// return the private key stored at the default location when passed current_user_key_name()
     /// and current_user_search_path() as arguments.
