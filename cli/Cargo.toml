@@ -1,4 +1,4 @@
-# Copyright 2017 Intel Corporation
+# Copyright 2021 Cargill Incorporated
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,36 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 
-# Exclude IDE and Editor files
-/.idea/
-*.sublime*
+[package]
+name = "cyl"
+version = "0.1.0"
+authors = ["Cargill Incorporated"]
+edition = "2018"
 
-/build/
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-cli/target
-cli/Cargo.lock
-libcylinder/target
-libcylinder/Cargo.lock
+[dependencies]
+cylinder = { path = "../libcylinder", features = ["jwt", "key-load"] }
+clap = "2"
+dirs = "4"
+log = "0.4"
+flexi_logger = "0.19"
 
-*.batch
-.coverage
+[features]
+default = []
+
+stable = [
+    "default",
+]
+
+experimental = [
+  # The experimental feature extends stable:
+  "stable",
+  # The following features are experimental:
+]
+
+[package.metadata.docs.rs]
+features = [
+  "stable",
+  "experimental"
+]

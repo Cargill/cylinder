@@ -15,6 +15,7 @@
 
 crates := '\
     libcylinder \
+    cli
     '
 
 features := '\
