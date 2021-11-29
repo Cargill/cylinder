@@ -1,5 +1,13 @@
 # Release Notes
 
+## Changes in Cylinder 0.2.3
+
+* Update the `dirs` dependency version to 4.
+* Update the `rand` dependency version to 0.8.
+* Update the `secp256k1` dependency version to 0.20.
+* Update the `whoami` dependency version to 1.1.
+* Switch from Travis CI to GitHub Actions.
+
 ## Changes in Cylinder 0.2.2
 
 * Stabilize the `jwt` and `key-load` features.
