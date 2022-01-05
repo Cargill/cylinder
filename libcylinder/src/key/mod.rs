@@ -25,7 +25,7 @@ use crate::hex::{bytes_to_hex_str, hex_str_to_bytes, HexError};
 pub(crate) mod load;
 
 /// A public key
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct PublicKey {
     bytes: Vec<u8>,
 }
@@ -72,7 +72,7 @@ impl std::fmt::Display for PublicKey {
 }
 
 /// A private key
-#[derive(Clone)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct PrivateKey {
     bytes: Vec<u8>,
 }
