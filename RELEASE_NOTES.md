@@ -1,5 +1,11 @@
 # Release Notes
 
+## Changes in Cylinder 0.2.4
+
+* Derives `Hash`, `PartialEq`, and `Eq` for `PublicKey` and `PrivateKey`. This
+  allows `PublicKey` and/or `PrivateKey` to be contained in structs which derive
+  `Hash`, `PartialEq`, and `Eq` themselves.
+
 ## Changes in Cylinder 0.2.3
 
 * Update the `dirs` dependency version to 4.
