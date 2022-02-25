@@ -22,9 +22,8 @@ pub mod pem;
 
 use std::sync::Arc;
 
-use crypto::digest::Digest;
-use crypto::sha2::Sha256;
 use rand::{rngs::OsRng, RngCore};
+use sha2::{Digest, Sha256};
 
 use crate::{
     Context, ContextError, PrivateKey, PublicKey, Signature, Signer, SigningError,
@@ -102,11 +101,7 @@ impl Signer for Secp256k1Signer {
     }
 
     fn sign(&self, message: &[u8]) -> Result<Signature, SigningError> {
-        let mut sha = Sha256::new();
-        sha.input(message);
-        let hash: &mut [u8] = &mut [0; 32];
-        sha.result(hash);
-
+        let hash: &[u8] = &Sha256::digest(message);
         let sk = secp256k1::key::SecretKey::from_slice(self.key.as_slice())?;
         let sig = self
             .context
@@ -151,11 +146,7 @@ impl Verifier for Secp256k1Verifier {
         signature: &Signature,
         public_key: &PublicKey,
     ) -> Result<bool, VerificationError> {
-        let mut sha = Sha256::new();
-        sha.input(message);
-        let hash: &mut [u8] = &mut [0; 32];
-        sha.result(hash);
-
+        let hash: &[u8] = &Sha256::digest(message);
         let result = self.context.verify(
             &secp256k1::Message::from_slice(hash)?,
             &secp256k1::Signature::from_compact(signature.as_slice())?,
