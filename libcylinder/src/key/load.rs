@@ -236,7 +236,7 @@ mod tests {
     use serial_test::serial;
     use std::fs::File;
     use std::io::Write;
-    use tempdir::TempDir;
+    use tempfile::Builder;
 
     /// Tests that when `load_key` is called with a valid key name and path it successfully returns
     /// the private key.
@@ -246,7 +246,10 @@ mod tests {
     /// 3. Ensure the private key is returned.
     #[test]
     fn load_key_success() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
@@ -285,7 +288,10 @@ mod tests {
     #[test]
     #[serial(env_var)]
     fn load_key_env_var_success() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
@@ -339,7 +345,10 @@ mod tests {
     #[test]
     #[serial(env_var)]
     fn load_key_env_var_multiple_paths_success() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
@@ -394,7 +403,10 @@ mod tests {
     #[test]
     #[serial(env_var)]
     fn load_key_env_var_bad_paths_none() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
@@ -448,7 +460,10 @@ mod tests {
     fn load_key_default_path_success() {
         let original_home = std::env::var("HOME").expect("failed to get original home dir");
 
-        let temp_home = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_home = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
         std::env::set_var("HOME", temp_home.path());
 
         let mut temp_path = temp_home.path().to_path_buf();
@@ -496,7 +511,10 @@ mod tests {
     /// 3. Ensure the private key is returned.
     #[test]
     fn load_key_from_path_success() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
@@ -526,7 +544,10 @@ mod tests {
     /// 3. Ensure an error is returned.
     #[test]
     fn load_key_from_path_fail_empty_file() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
@@ -544,7 +565,10 @@ mod tests {
     /// 3. Ensure an error is returned.
     #[test]
     fn load_key_from_path_fail_bad_path() {
-        let temp_dir = TempDir::new("test_key_dir").expect("Failed to create temp dir");
+        let temp_dir = Builder::new()
+            .prefix("test_key_dir")
+            .tempdir()
+            .expect("Failed to create temp dir");
 
         let key_name = "test_key.priv";
 
