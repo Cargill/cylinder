@@ -46,7 +46,7 @@ hash = []
 jwt = ["json", "base64"]
 # Add support for loading PEM encoded private keys
 pem = ["openssl"]
-key-load = ["dirs", "log", "whoami", "tempdir"]
+key-load = ["dirs", "log", "whoami"]
 
 [dependencies]
 base64 = { version = "0.13", optional = true }
@@ -57,11 +57,11 @@ openssl = { version = "0.10", optional = true }
 rand = "0.8"
 secp256k1 = "0.20"
 sha2 = "0.10"
-tempdir = { version = "0.3", optional = true }
 whoami = { version = "1.1", optional = true }
 
 [dev-dependencies]
 serial_test = "0.5"
+tempfile = "3"
 
 [package.metadata.docs.rs]
 features = [
